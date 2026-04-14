@@ -1,12 +1,18 @@
 ---
+import { getCollection } from "astro:content";
 import SiteLayout from "../layouts/SiteLayout.astro";
-import {
-  featuredTags,
-  recentPosts,
-  siteDescription,
-  siteTitle,
-  studyNotes,
-} from "../data/site";
+import { siteDescription, siteTitle } from "../data/site";
+
+const allPosts = await getCollection("posts");
+const sortedPosts = [...allPosts].sort((a, b) =>
+  b.data.publishedAt.localeCompare(a.data.publishedAt),
+);
+
+const recentPosts = sortedPosts.filter((post) => post.data.type === "latest");
+const studyNotes = sortedPosts.filter((post) => post.data.type === "study");
+const featuredTags = Array.from(
+  new Set(sortedPosts.flatMap((post) => post.data.tags)),
+).slice(0, 6);
 ---
 
 <SiteLayout title={siteTitle} description={siteDescription} currentPath="/">
@@ -39,10 +45,10 @@ import {
 
       <div class="card-list">
         {recentPosts.map((post) => (
-          <a href={`/posts/${post.slug}/`} class="post-card">
-            <p class="post-card__meta">{post.category} · {post.publishedAt}</p>
-            <h3 class="post-card__title">{post.title}</h3>
-            <p class="post-card__description">{post.description}</p>
+          <a href={`/posts/${post.id}/`} class="post-card">
+            <p class="post-card__meta">{post.data.category} · {post.data.publishedAt}</p>
+            <h3 class="post-card__title">{post.data.title}</h3>
+            <p class="post-card__description">{post.data.description}</p>
           </a>
         ))}
       </div>
@@ -55,11 +61,11 @@ import {
       </div>
 
       <div class="card-list">
-        {studyNotes.map((note) => (
-          <a href={`/posts/${note.slug}/`} class="post-card">
-            <p class="post-card__meta">{note.category} · {note.publishedAt}</p>
-            <h3 class="post-card__title">{note.title}</h3>
-            <p class="post-card__description">{note.description}</p>
+        {studyNotes.map((post) => (
+          <a href={`/posts/${post.id}/`} class="post-card">
+            <p class="post-card__meta">{post.data.category} · {post.data.publishedAt}</p>
+            <h3 class="post-card__title">{post.data.title}</h3>
+            <p class="post-card__description">{post.data.description}</p>
           </a>
         ))}
       </div>

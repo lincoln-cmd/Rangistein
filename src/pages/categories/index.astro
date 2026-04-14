@@ -1,10 +1,13 @@
 ---
+import { getCollection } from "astro:content";
 import SiteLayout from "../../layouts/SiteLayout.astro";
-import { categories, posts } from "../../data/site";
+import { categories } from "../../data/site";
+
+const allPosts = await getCollection("posts");
 
 const categoryCounts = categories.map((category) => ({
   ...category,
-  count: posts.filter((post) => post.categorySlug === category.slug).length,
+  count: allPosts.filter((post) => post.data.categorySlug === category.slug).length,
 }));
 ---
 
@@ -22,9 +25,7 @@ const categoryCounts = categories.map((category) => ({
       <a href={`/categories/${category.slug}/`} class="category-card">
         <p class="category-card__count">게시물 {category.count}개</p>
         <h2 class="category-card__title">{category.name}</h2>
-        <p class="category-card__description">
-          {category.name} 관련 게시물과 정리 글을 확인할 수 있습니다.
-        </p>
+        <p class="category-card__description">{category.description}</p>
       </a>
     ))}
   </section>

@@ -1,38 +1,39 @@
 ---
+import { getCollection, render } from "astro:content";
 import SiteLayout from "../../layouts/SiteLayout.astro";
-import { posts } from "../../data/site";
 
-export function getStaticPaths() {
+export async function getStaticPaths() {
+  const posts = await getCollection("posts");
+
   return posts.map((post) => ({
-    params: { slug: post.slug },
+    params: { slug: post.id },
     props: { post },
   }));
 }
 
 const { post } = Astro.props;
+const { Content } = await render(post);
 ---
 
-<SiteLayout title={`${post.title} | 랑이슈타인`}>
+<SiteLayout title={`${post.data.title} | 랑이슈타인`}>
   <article class="article-card">
-    <p class="eyebrow">{post.category} · {post.publishedAt}</p>
-    <h1 class="article-title">{post.title}</h1>
-    <p class="article-description">{post.description}</p>
+    <p class="eyebrow">{post.data.category} · {post.data.publishedAt}</p>
+    <h1 class="article-title">{post.data.title}</h1>
+    <p class="article-description">{post.data.description}</p>
 
     <div class="tag-list">
-      {post.tags.map((tag) => (
+      {post.data.tags.map((tag: string) => (
         <a href="/tags/" class="tag-chip">#{tag}</a>
       ))}
     </div>
 
     <div class="article-body">
-      {post.body.map((paragraph: string) => (
-        <p>{paragraph}</p>
-      ))}
+      <Content />
     </div>
 
     <div class="article-actions">
-      <a href={`/categories/${post.categorySlug}/`} class="back-link">
-        ← {post.category} 목록으로
+      <a href={`/categories/${post.data.categorySlug}/`} class="back-link">
+        ← {post.data.category} 목록으로
       </a>
     </div>
   </article>
@@ -89,7 +90,7 @@ const { post } = Astro.props;
     margin-top: 1.5rem;
   }
 
-  .article-body p {
+  .article-body :global(p) {
     margin: 0 0 1rem;
     color: #2e3c49;
     font-size: 1rem;

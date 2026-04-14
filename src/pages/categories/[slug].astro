@@ -1,16 +1,21 @@
 ---
+import { getCollection } from "astro:content";
 import SiteLayout from "../../layouts/SiteLayout.astro";
-import { categories, posts } from "../../data/site";
+import { categories } from "../../data/site";
 
-export function getStaticPaths() {
+export async function getStaticPaths() {
+  const allPosts = await getCollection("posts");
+
   return categories.map((category) => ({
     params: { slug: category.slug },
-    props: { category },
+    props: {
+      category,
+      posts: allPosts.filter((post) => post.data.categorySlug === category.slug),
+    },
   }));
 }
 
-const { category } = Astro.props;
-const filteredPosts = posts.filter((post) => post.categorySlug === category.slug);
+const { category, posts } = Astro.props;
 ---
 
 <SiteLayout title={`${category.name} | 랑이슈타인`} currentPath={`/categories/${category.slug}/`}>
@@ -23,11 +28,11 @@ const filteredPosts = posts.filter((post) => post.categorySlug === category.slug
   </section>
 
   <section class="post-list">
-    {filteredPosts.map((post) => (
-      <a href={`/posts/${post.slug}/`} class="post-card">
-        <p class="post-card__meta">{post.category} · {post.publishedAt}</p>
-        <h2 class="post-card__title">{post.title}</h2>
-        <p class="post-card__description">{post.description}</p>
+    {posts.map((post: any) => (
+      <a href={`/posts/${post.id}/`} class="post-card">
+        <p class="post-card__meta">{post.data.category} · {post.data.publishedAt}</p>
+        <h2 class="post-card__title">{post.data.title}</h2>
+        <p class="post-card__description">{post.data.description}</p>
       </a>
     ))}
   </section>

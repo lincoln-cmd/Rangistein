@@ -1,8 +1,9 @@
 ---
+import { getCollection } from "astro:content";
 import SiteLayout from "../../layouts/SiteLayout.astro";
-import { posts } from "../../data/site";
 
-const tags = Array.from(new Set(posts.flatMap((post) => post.tags))).sort();
+const posts = await getCollection("posts");
+const tags = Array.from(new Set(posts.flatMap((post) => post.data.tags))).sort();
 ---
 
 <SiteLayout title="태그 | 랑이슈타인" currentPath="/tags/">
