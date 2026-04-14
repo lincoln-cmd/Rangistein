@@ -1,17 +1,482 @@
 ---
+import BaseLayout from "../layouts/BaseLayout.astro";
 
+const categories = [
+  "수학",
+  "물리",
+  "화학",
+  "생명과학",
+  "지구과학",
+  "천문학",
+  "개인 공부 노트",
+];
+
+const recentPosts = [
+  {
+    title: "외계행성 관측 연구 정리",
+    description: "천문학 최신 연구 흐름과 관측 방법을 간단히 정리한 게시물",
+    meta: "천문학 · 최신 동향",
+  },
+  {
+    title: "양자역학 입문 개념 노트",
+    description: "파동함수, 중첩, 관측 문제를 초보자 관점에서 정리한 글",
+    meta: "물리 · 이론 정리",
+  },
+  {
+    title: "분자 결합과 전자 배치 기초",
+    description: "화학 결합 이해를 위한 핵심 개념을 단계별로 정리",
+    meta: "화학 · 공부 기록",
+  },
+];
+
+const studyNotes = [
+  {
+    title: "미적분 복습 노트",
+    description: "극한, 연속, 미분의 핵심 개념을 다시 정리한 개인 학습 기록",
+  },
+  {
+    title: "세포 호흡 정리",
+    description: "생명과학 기초 단원 중 세포 호흡 흐름을 요약한 노트",
+  },
+  {
+    title: "판 구조론 핵심 포인트",
+    description: "지구과학 개념 복습을 위한 핵심 정리",
+  },
+];
+
+const featuredTags = ["논문 요약", "최신 동향", "기초 개념", "공부 노트", "천문학", "물리학"];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout
+  title="랑이슈타인"
+  description="과학 이론, 최신 동향, 논문 요약, 개인 학습 기록을 정리하는 개인 과학 웹 아카이브"
+>
+  <main class="page-shell">
+    <aside class="sidebar">
+      <div class="sidebar__inner">
+        <a class="brand" href="/">
+          <span class="brand__title">랑이슈타인</span>
+          <span class="brand__subtitle">Science Archive</span>
+        </a>
+
+        <nav class="sidebar__section">
+          <h2 class="sidebar__heading">카테고리</h2>
+          <ul class="sidebar__list">
+            {categories.map((category) => (
+              <li>
+                <a href="/" class="sidebar__link">{category}</a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <section class="sidebar__section">
+          <h2 class="sidebar__heading">바로가기</h2>
+          <ul class="sidebar__list">
+            <li><a href="/" class="sidebar__link">소개</a></li>
+            <li><a href="/" class="sidebar__link">최신 글</a></li>
+            <li><a href="/" class="sidebar__link">학습 노트</a></li>
+            <li><a href="/" class="sidebar__link">태그</a></li>
+          </ul>
+        </section>
+      </div>
+    </aside>
+
+    <div class="content-area">
+      <header class="hero">
+        <div class="hero__overlay">
+          <p class="hero__eyebrow">개인 과학 웹 아카이브</p>
+          <h1 class="hero__title">랑이슈타인</h1>
+          <p class="hero__description">
+            수학, 물리, 화학, 생명과학, 지구과학, 천문학을 중심으로
+            과학 이론, 최신 동향, 논문 요약, 개인 학습 기록을 정리하는 웹 페이지입니다.
+          </p>
+        </div>
+      </header>
+
+      <section class="intro section-card">
+        <h2 class="section-title">프로젝트 소개</h2>
+        <p class="section-text">
+          랑이슈타인은 과학 관련 지식을 분야별로 정리하고, 개인 학습 과정을 함께 기록하는
+          아카이브형 웹 사이트입니다. 단순한 정보 수집형 페이지가 아니라,
+          공부 기록과 해설, 요약 콘텐츠를 함께 제공하는 것을 목표로 합니다.
+        </p>
+      </section>
+
+      <section class="content-grid">
+        <article class="section-card">
+          <div class="section-header">
+            <h2 class="section-title">최신 연구 동향 · 논문</h2>
+            <a href="/" class="section-link">전체 보기</a>
+          </div>
+
+          <div class="card-list">
+            {recentPosts.map((post) => (
+              <a href="/" class="post-card">
+                <p class="post-card__meta">{post.meta}</p>
+                <h3 class="post-card__title">{post.title}</h3>
+                <p class="post-card__description">{post.description}</p>
+              </a>
+            ))}
+          </div>
+        </article>
+
+        <article class="section-card">
+          <div class="section-header">
+            <h2 class="section-title">개인 공부 게시물</h2>
+            <a href="/" class="section-link">전체 보기</a>
+          </div>
+
+          <div class="card-list">
+            {studyNotes.map((note) => (
+              <a href="/" class="post-card">
+                <p class="post-card__meta">Study Note</p>
+                <h3 class="post-card__title">{note.title}</h3>
+                <p class="post-card__description">{note.description}</p>
+              </a>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <section class="section-card">
+        <div class="section-header">
+          <h2 class="section-title">대표 태그</h2>
+          <a href="/" class="section-link">태그 더 보기</a>
+        </div>
+
+        <div class="tag-list">
+          {featuredTags.map((tag) => (
+            <a href="/" class="tag-chip">#{tag}</a>
+          ))}
+        </div>
+      </section>
+
+      <footer class="footer section-card">
+        <h2 class="section-title">관리자</h2>
+        <p class="section-text">
+          김동훈 · 과학 이론, 최신 동향, 논문 요약, 개인 학습 기록을 정리하는 개인 웹 아카이브 운영
+        </p>
+        <p class="footer__meta">Contact · 추후 이메일 / GitHub 링크 추가 예정</p>
+      </footer>
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  :global(*) {
+    box-sizing: border-box;
+  }
+
+  :global(html) {
+    scroll-behavior: smooth;
+  }
+
+  :global(body) {
+    margin: 0;
+    font-family:
+      "Pretendard",
+      "Apple SD Gothic Neo",
+      "Noto Sans KR",
+      Arial,
+      sans-serif;
+    background: #f4f7fb;
+    color: #1d2733;
+    line-height: 1.6;
+  }
+
+  :global(a) {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .page-shell {
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    min-height: 100vh;
+  }
+
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    border-right: 1px solid #d8e1ea;
+    background: linear-gradient(180deg, #0f1720 0%, #182534 100%);
+    color: #edf4fb;
+  }
+
+  .sidebar__inner {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem 1.5rem;
+    overflow-y: auto;
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .brand__title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .brand__subtitle {
+    font-size: 0.9rem;
+    color: #b6c7d9;
+  }
+
+  .sidebar__section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .sidebar__heading {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #dbe8f5;
+  }
+
+  .sidebar__list {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sidebar__link {
+    display: block;
+    padding: 0.65rem 0.8rem;
+    border-radius: 12px;
+    color: #d7e4f1;
+    transition:
+      background-color 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .sidebar__link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(2px);
+  }
+
+  .content-area {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    min-width: 0;
+    padding: 1.5rem;
+  }
+
+  .hero {
+    position: relative;
+    min-height: 320px;
+    border-radius: 24px;
+    overflow: hidden;
+    background:
+      linear-gradient(135deg, rgba(21, 45, 86, 0.88), rgba(24, 110, 128, 0.75)),
+      radial-gradient(circle at top right, rgba(255, 255, 255, 0.14), transparent 35%),
+      #16304a;
+  }
+
+  .hero__overlay {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    min-height: 320px;
+    padding: 2rem;
+    color: #f7fbff;
+  }
+
+  .hero__eyebrow {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #c8dff3;
+  }
+
+  .hero__title {
+    margin: 0;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+  }
+
+  .hero__description {
+    max-width: 760px;
+    margin: 0;
+    font-size: 1.02rem;
+    color: #e6f0f8;
+  }
+
+  .content-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  .section-card {
+    padding: 1.5rem;
+    border: 1px solid #dde5ed;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(19, 36, 59, 0.06);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .section-link {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #285ea8;
+  }
+
+  .section-text {
+    margin: 0;
+    color: #4b5b6b;
+  }
+
+  .card-list {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .post-card {
+    display: block;
+    padding: 1rem 1.05rem;
+    border: 1px solid #e4ebf2;
+    border-radius: 16px;
+    background: #fbfdff;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .post-card:hover {
+    transform: translateY(-2px);
+    border-color: #bfd3ea;
+    box-shadow: 0 10px 24px rgba(24, 62, 105, 0.08);
+  }
+
+  .post-card__meta {
+    margin: 0 0 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #51719a;
+  }
+
+  .post-card__title {
+    margin: 0 0 0.45rem;
+    font-size: 1.05rem;
+    line-height: 1.35;
+  }
+
+  .post-card__description {
+    margin: 0;
+    color: #58697a;
+    font-size: 0.95rem;
+  }
+
+  .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .tag-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.65rem 0.95rem;
+    border-radius: 999px;
+    background: #eef5fc;
+    color: #244f84;
+    font-size: 0.92rem;
+    font-weight: 700;
+  }
+
+  .footer__meta {
+    margin: 0.6rem 0 0;
+    color: #6a7988;
+    font-size: 0.92rem;
+  }
+
+  @media (max-width: 1080px) {
+    .page-shell {
+      grid-template-columns: 240px minmax(0, 1fr);
+    }
+
+    .content-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 820px) {
+    .page-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+      position: static;
+      height: auto;
+      border-right: none;
+      border-bottom: 1px solid #d8e1ea;
+    }
+
+    .sidebar__inner {
+      height: auto;
+      padding: 1.25rem;
+    }
+
+    .content-area {
+      padding: 1rem;
+    }
+
+    .hero,
+    .hero__overlay {
+      min-height: 260px;
+    }
+
+    .section-card {
+      padding: 1.2rem;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .hero__overlay {
+      padding: 1.4rem;
+    }
+
+    .hero__description {
+      font-size: 0.95rem;
+    }
+
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
