@@ -1,12 +1,14 @@
 ---
+import { siteDescription, siteTitle } from "../data/site";
+
 export interface Props {
   title?: string;
   description?: string;
 }
 
 const {
-  title = "랑이슈타인",
-  description = "과학 이론, 최신 동향, 논문 요약, 개인 학습 기록을 정리하는 개인 과학 웹 아카이브",
+  title = siteTitle,
+  description = siteDescription,
 } = Astro.props;
 ---
 
