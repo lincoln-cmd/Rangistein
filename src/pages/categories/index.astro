@@ -1,0 +1,108 @@
+---
+import { getCollection } from "astro:content";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { categories } from "../../data/site";
+
+const allPosts = await getCollection("posts");
+
+const categoryCounts = categories.map((category) => ({
+  ...category,
+  count: allPosts.filter((post) => post.data.categorySlug === category.slug).length,
+}));
+---
+
+<SiteLayout title="카테고리 | 랑이슈타인" currentPath="/categories/">
+  <section class="section-card">
+    <p class="eyebrow">Category Index</p>
+    <h1 class="page-title">카테고리</h1>
+    <p class="page-description">
+      랑이슈타인에서 다루는 과학 분야와 학습 노트 분류를 한눈에 볼 수 있습니다.
+    </p>
+  </section>
+
+  <section class="card-grid">
+    {categoryCounts.map((category) => (
+      <a href={`/categories/${category.slug}/`} class="category-card">
+        <p class="category-card__count">게시물 {category.count}개</p>
+        <h2 class="category-card__title">{category.name}</h2>
+        <p class="category-card__description">{category.description}</p>
+      </a>
+    ))}
+  </section>
+</SiteLayout>
+
+<style>
+  .section-card {
+    padding: 1.5rem;
+    border: 1px solid #dde5ed;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(19, 36, 59, 0.06);
+  }
+
+  .eyebrow {
+    margin: 0 0 0.4rem;
+    color: #51719a;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .page-title {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    line-height: 1.15;
+  }
+
+  .page-description {
+    margin: 0;
+    color: #58697a;
+  }
+
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+
+  .category-card {
+    display: block;
+    padding: 1.4rem;
+    border: 1px solid #dde5ed;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(19, 36, 59, 0.05);
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .category-card:hover {
+    transform: translateY(-2px);
+    border-color: #bfd3ea;
+    box-shadow: 0 12px 28px rgba(24, 62, 105, 0.08);
+  }
+
+  .category-card__count {
+    margin: 0 0 0.35rem;
+    color: #51719a;
+    font-size: 0.84rem;
+    font-weight: 700;
+  }
+
+  .category-card__title {
+    margin: 0 0 0.45rem;
+    font-size: 1.2rem;
+  }
+
+  .category-card__description {
+    margin: 0;
+    color: #58697a;
+  }
+
+  @media (max-width: 900px) {
+    .card-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

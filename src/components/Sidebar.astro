@@ -1,0 +1,201 @@
+---
+import { categories } from "../data/site";
+
+type Props = {
+  currentPath?: string;
+};
+
+const { currentPath = "/" } = Astro.props;
+
+const quickLinks = [
+  { href: "/", label: "홈" },
+  { href: "/categories/", label: "카테고리" },
+  { href: "/tags/", label: "태그" },
+];
+---
+
+<aside class="sidebar">
+  <div class="sidebar__inner">
+    <a class="brand" href="/">
+      <span class="brand__title">랑이슈타인</span>
+      <span class="brand__subtitle">Science Archive</span>
+    </a>
+
+    <nav class="sidebar__section">
+      <h2 class="sidebar__heading">카테고리</h2>
+      <ul class="sidebar__list">
+        {categories.map((category) => (
+          <li>
+            <a
+              href={`/categories/${category.slug}/`}
+              class={`sidebar__link ${currentPath === `/categories/${category.slug}/` ? "is-active" : ""}`}
+            >
+              {category.name}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    <section class="sidebar__section">
+      <h2 class="sidebar__heading">바로가기</h2>
+      <ul class="sidebar__list">
+        {quickLinks.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              class={`sidebar__link ${currentPath === link.href ? "is-active" : ""}`}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </div>
+</aside>
+
+<style>
+  .sidebar {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    border-right: 1px solid #d8e1ea;
+    background: linear-gradient(180deg, #0f1720 0%, #182534 100%);
+    color: #edf4fb;
+  }
+
+  .sidebar__inner {
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem 1.5rem;
+    overflow-y: auto;
+  }
+
+  .brand {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .brand__title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  .brand__subtitle {
+    font-size: 0.9rem;
+    color: #b6c7d9;
+  }
+
+  .sidebar__section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9rem;
+  }
+
+  .sidebar__heading {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #dbe8f5;
+  }
+
+  .sidebar__list {
+    display: grid;
+    gap: 0.55rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sidebar__link {
+    display: block;
+    padding: 0.65rem 0.8rem;
+    border-radius: 12px;
+    color: #d7e4f1;
+    text-decoration: none;
+    transition:
+      background-color 0.2s ease,
+      transform 0.2s ease;
+    word-break: keep-all;
+  }
+
+  .sidebar__link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(2px);
+  }
+
+  .sidebar__link.is-active {
+    background: rgba(255, 255, 255, 0.12);
+    color: #ffffff;
+  }
+
+  @media (max-width: 820px) {
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      border-right: 1px solid #d8e1ea;
+      border-bottom: none;
+    }
+
+    .sidebar__inner {
+      height: 100vh;
+      padding: 1rem 0.75rem;
+      gap: 1.25rem;
+    }
+
+    .brand {
+      padding-bottom: 0.75rem;
+    }
+
+    .brand__title {
+      font-size: 1rem;
+      line-height: 1.2;
+    }
+
+    .brand__subtitle {
+      display: none;
+    }
+
+    .sidebar__heading {
+      font-size: 0.78rem;
+    }
+
+    .sidebar__link {
+      padding: 0.5rem 0.45rem;
+      font-size: 0.78rem;
+      line-height: 1.35;
+      border-radius: 10px;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .sidebar__inner {
+      padding: 0.85rem 0.55rem;
+      gap: 1rem;
+    }
+
+    .brand__title {
+      font-size: 0.88rem;
+    }
+
+    .sidebar__heading {
+      font-size: 0.72rem;
+    }
+
+    .sidebar__link {
+      padding: 0.45rem 0.35rem;
+      font-size: 0.72rem;
+      line-height: 1.3;
+    }
+  }
+</style>

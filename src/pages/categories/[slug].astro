@@ -1,0 +1,108 @@
+---
+import { getCollection } from "astro:content";
+import SiteLayout from "../../layouts/SiteLayout.astro";
+import { categories } from "../../data/site";
+
+export async function getStaticPaths() {
+  const allPosts = await getCollection("posts");
+
+  return categories.map((category) => ({
+    params: { slug: category.slug },
+    props: {
+      category,
+      posts: allPosts.filter((post) => post.data.categorySlug === category.slug),
+    },
+  }));
+}
+
+const { category, posts } = Astro.props;
+---
+
+<SiteLayout title={`${category.name} | 랑이슈타인`} currentPath={`/categories/${category.slug}/`}>
+  <section class="section-card">
+    <p class="eyebrow">Category</p>
+    <h1 class="page-title">{category.name}</h1>
+    <p class="page-description">
+      {category.name} 카테고리에 포함된 게시물 목록입니다.
+    </p>
+  </section>
+
+  <section class="post-list">
+    {posts.map((post: any) => (
+      <a href={`/posts/${post.id}/`} class="post-card">
+        <p class="post-card__meta">{post.data.category} · {post.data.publishedAt}</p>
+        <h2 class="post-card__title">{post.data.title}</h2>
+        <p class="post-card__description">{post.data.description}</p>
+      </a>
+    ))}
+  </section>
+</SiteLayout>
+
+<style>
+  .section-card {
+    padding: 1.5rem;
+    border: 1px solid #dde5ed;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(19, 36, 59, 0.06);
+  }
+
+  .eyebrow {
+    margin: 0 0 0.4rem;
+    color: #51719a;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .page-title {
+    margin: 0 0 0.5rem;
+    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    line-height: 1.15;
+  }
+
+  .page-description {
+    margin: 0;
+    color: #58697a;
+  }
+
+  .post-list {
+    display: grid;
+    gap: 1rem;
+  }
+
+  .post-card {
+    display: block;
+    padding: 1.2rem 1.25rem;
+    border: 1px solid #dde5ed;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(19, 36, 59, 0.05);
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .post-card:hover {
+    transform: translateY(-2px);
+    border-color: #bfd3ea;
+    box-shadow: 0 12px 28px rgba(24, 62, 105, 0.08);
+  }
+
+  .post-card__meta {
+    margin: 0 0 0.35rem;
+    color: #51719a;
+    font-size: 0.84rem;
+    font-weight: 700;
+  }
+
+  .post-card__title {
+    margin: 0 0 0.45rem;
+    font-size: 1.15rem;
+  }
+
+  .post-card__description {
+    margin: 0;
+    color: #58697a;
+  }
+</style>
