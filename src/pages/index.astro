@@ -3,10 +3,15 @@ import { getCollection } from "astro:content";
 import SiteLayout from "../layouts/SiteLayout.astro";
 import { siteDescription, siteTitle } from "../data/site";
 
-const allPosts = await getCollection("posts");
-const sortedPosts = [...allPosts].sort((a, b) =>
-  b.data.publishedAt.localeCompare(a.data.publishedAt),
-);
+const allPosts = await getCollection("posts", ({ data }) => !data.draft);
+
+const sortedPosts = [...allPosts].sort((a, b) => {
+  if (a.data.featured !== b.data.featured) {
+    return a.data.featured ? -1 : 1;
+  }
+
+  return b.data.publishedAt.localeCompare(a.data.publishedAt);
+});
 
 const recentPosts = sortedPosts.filter((post) => post.data.type === "latest");
 const studyNotes = sortedPosts.filter((post) => post.data.type === "study");
@@ -46,7 +51,10 @@ const featuredTags = Array.from(
       <div class="card-list">
         {recentPosts.map((post) => (
           <a href={`/posts/${post.id}/`} class="post-card">
-            <p class="post-card__meta">{post.data.category} · {post.data.publishedAt}</p>
+            <p class="post-card__meta">
+              {post.data.category} · {post.data.publishedAt}
+              {post.data.featured ? " · 대표 글" : ""}
+            </p>
             <h3 class="post-card__title">{post.data.title}</h3>
             <p class="post-card__description">{post.data.description}</p>
           </a>
@@ -63,7 +71,10 @@ const featuredTags = Array.from(
       <div class="card-list">
         {studyNotes.map((post) => (
           <a href={`/posts/${post.id}/`} class="post-card">
-            <p class="post-card__meta">{post.data.category} · {post.data.publishedAt}</p>
+            <p class="post-card__meta">
+              {post.data.category} · {post.data.publishedAt}
+              {post.data.featured ? " · 대표 글" : ""}
+            </p>
             <h3 class="post-card__title">{post.data.title}</h3>
             <p class="post-card__description">{post.data.description}</p>
           </a>

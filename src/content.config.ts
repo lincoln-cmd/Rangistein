@@ -15,6 +15,17 @@ const postsCollection = defineCollection({
     tags: z.array(z.string()),
     type: z.enum(["latest", "study"]),
     publishedAt: z.string(),
+    updatedAt: z.string().optional(),
+    draft: z.boolean().default(false),
+    featured: z.boolean().default(false),
+    references: z
+      .array(
+        z.object({
+          title: z.string(),
+          url: z.string().url(),
+        }),
+      )
+      .default([]),
   }),
 });
 

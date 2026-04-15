@@ -3,7 +3,7 @@ import { getCollection } from "astro:content";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 import { categories } from "../../data/site";
 
-const allPosts = await getCollection("posts");
+const allPosts = await getCollection("posts", ({ data }) => !data.draft);
 
 const categoryCounts = categories.map((category) => ({
   ...category,

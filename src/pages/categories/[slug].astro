@@ -4,13 +4,15 @@ import SiteLayout from "../../layouts/SiteLayout.astro";
 import { categories } from "../../data/site";
 
 export async function getStaticPaths() {
-  const allPosts = await getCollection("posts");
+  const allPosts = await getCollection("posts", ({ data }) => !data.draft);
 
   return categories.map((category) => ({
     params: { slug: category.slug },
     props: {
       category,
-      posts: allPosts.filter((post) => post.data.categorySlug === category.slug),
+      posts: allPosts
+        .filter((post) => post.data.categorySlug === category.slug)
+        .sort((a, b) => b.data.publishedAt.localeCompare(a.data.publishedAt)),
     },
   }));
 }
@@ -30,7 +32,10 @@ const { category, posts } = Astro.props;
   <section class="post-list">
     {posts.map((post: any) => (
       <a href={`/posts/${post.id}/`} class="post-card">
-        <p class="post-card__meta">{post.data.category} · {post.data.publishedAt}</p>
+        <p class="post-card__meta">
+          {post.data.category} · {post.data.publishedAt}
+          {post.data.featured ? " · 대표 글" : ""}
+        </p>
         <h2 class="post-card__title">{post.data.title}</h2>
         <p class="post-card__description">{post.data.description}</p>
       </a>

@@ -2,7 +2,7 @@
 import { getCollection } from "astro:content";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 
-const posts = await getCollection("posts");
+const posts = await getCollection("posts", ({ data }) => !data.draft);
 const tags = Array.from(new Set(posts.flatMap((post) => post.data.tags))).sort();
 ---
 

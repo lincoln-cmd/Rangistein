@@ -9,6 +9,10 @@ tags:
   - "기초 개념"
 type: "study"
 publishedAt: "2026-04-11"
+updatedAt: "2026-04-14"
+draft: false
+featured: false
+references: []
 ---
 
 미적분의 기초는 극한과 연속 개념에서 시작합니다.
