@@ -1,0 +1,95 @@
+backend:
+  name: github
+  repo: lincoln-cmd/Rangistein
+  branch: main
+
+media_folder: "public/uploads"
+public_folder: "/uploads"
+
+site_url: "/"
+display_url: "/"
+
+locale: "ko"
+
+collections:
+  - name: "posts"
+    label: "게시물"
+    label_singular: "게시물"
+    folder: "src/content/posts"
+    create: true
+    slug: "{{slug}}"
+    extension: "md"
+    format: "frontmatter"
+    preview_path: "posts/{{slug}}"
+    fields:
+      - { label: "제목", name: "title", widget: "string" }
+      - { label: "설명", name: "description", widget: "text" }
+      - label: "카테고리"
+        name: "category"
+        widget: "select"
+        options:
+          - "수학"
+          - "물리"
+          - "화학"
+          - "생명과학"
+          - "지구과학"
+          - "천문학"
+          - "개인 공부 노트"
+      - label: "카테고리 슬러그"
+        name: "categorySlug"
+        widget: "select"
+        options:
+          - "math"
+          - "physics"
+          - "chemistry"
+          - "biology"
+          - "earth-science"
+          - "astronomy"
+          - "study-notes"
+      - label: "태그"
+        name: "tags"
+        widget: "list"
+        allow_add: true
+      - label: "게시물 유형"
+        name: "type"
+        widget: "select"
+        options:
+          - { label: "최신 연구/논문", value: "latest" }
+          - { label: "개인 공부 노트", value: "study" }
+      - {
+          label: "발행일",
+          name: "publishedAt",
+          widget: "datetime",
+          format: "YYYY-MM-DD",
+          time_format: false,
+        }
+      - {
+          label: "수정일",
+          name: "updatedAt",
+          widget: "datetime",
+          required: false,
+          format: "YYYY-MM-DD",
+          time_format: false,
+        }
+      - {
+          label: "초안",
+          name: "draft",
+          widget: "boolean",
+          default: false,
+          required: false,
+        }
+      - {
+          label: "대표 글",
+          name: "featured",
+          widget: "boolean",
+          default: false,
+          required: false,
+        }
+      - label: "참고 자료"
+        name: "references"
+        widget: "list"
+        required: false
+        fields:
+          - { label: "자료명", name: "title", widget: "string" }
+          - { label: "URL", name: "url", widget: "string" }
+      - { label: "본문", name: "body", widget: "markdown" }
