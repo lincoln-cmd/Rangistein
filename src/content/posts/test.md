@@ -7,6 +7,7 @@ tags:
   - test
 type: study
 publishedAt: 2026-04-15
+updatedAt: 2026-04-15
 draft: false
 featured: false
 ---
