@@ -9,6 +9,12 @@ tags:
   - "천문학"
 type: "latest"
 publishedAt: "2026-04-14"
+updatedAt: "2026-04-14"
+draft: false
+featured: true
+references:
+  - title: "NASA Exoplanet Exploration"
+    url: "https://exoplanets.nasa.gov/"
 ---
 
 외계행성 연구는 관측 기술의 발전과 함께 빠르게 확장되고 있습니다.

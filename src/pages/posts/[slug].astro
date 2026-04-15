@@ -3,7 +3,7 @@ import { getCollection, render } from "astro:content";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 
 export async function getStaticPaths() {
-  const posts = await getCollection("posts");
+  const posts = await getCollection("posts", ({ data }) => !data.draft);
 
   return posts.map((post) => ({
     params: { slug: post.id },
@@ -13,6 +13,7 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+const references = post.data.references ?? [];
 ---
 
 <SiteLayout title={`${post.data.title} | 랑이슈타인`}>
@@ -20,6 +21,25 @@ const { Content } = await render(post);
     <p class="eyebrow">{post.data.category} · {post.data.publishedAt}</p>
     <h1 class="article-title">{post.data.title}</h1>
     <p class="article-description">{post.data.description}</p>
+
+    <dl class="meta-grid">
+      <div>
+        <dt>분류</dt>
+        <dd>{post.data.category}</dd>
+      </div>
+      <div>
+        <dt>발행일</dt>
+        <dd>{post.data.publishedAt}</dd>
+      </div>
+      <div>
+        <dt>수정일</dt>
+        <dd>{post.data.updatedAt ?? "-"}</dd>
+      </div>
+      <div>
+        <dt>대표 글</dt>
+        <dd>{post.data.featured ? "예" : "아니오"}</dd>
+      </div>
+    </dl>
 
     <div class="tag-list">
       {post.data.tags.map((tag: string) => (
@@ -30,6 +50,21 @@ const { Content } = await render(post);
     <div class="article-body">
       <Content />
     </div>
+
+    {references.length > 0 && (
+      <section class="references">
+        <h2 class="references__title">참고 자료</h2>
+        <ul class="references__list">
+          {references.map((reference) => (
+            <li>
+              <a href={reference.url} target="_blank" rel="noreferrer">
+                {reference.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
 
     <div class="article-actions">
       <a href={`/categories/${post.data.categorySlug}/`} class="back-link">
@@ -68,6 +103,29 @@ const { Content } = await render(post);
     font-size: 1rem;
   }
 
+  .meta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.85rem 1rem;
+    margin: 1.5rem 0 0;
+    padding: 1rem 1.1rem;
+    border: 1px solid #e4ebf2;
+    border-radius: 16px;
+    background: #f9fbfe;
+  }
+
+  .meta-grid dt {
+    margin: 0 0 0.2rem;
+    color: #51719a;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .meta-grid dd {
+    margin: 0;
+    color: #2e3c49;
+  }
+
   .tag-list {
     display: flex;
     flex-wrap: wrap;
@@ -97,6 +155,32 @@ const { Content } = await render(post);
     line-height: 1.8;
   }
 
+  .references {
+    margin-top: 1.75rem;
+    padding: 1.2rem;
+    border: 1px solid #e4ebf2;
+    border-radius: 18px;
+    background: #fbfdff;
+  }
+
+  .references__title {
+    margin: 0 0 0.75rem;
+    font-size: 1.1rem;
+  }
+
+  .references__list {
+    margin: 0;
+    padding-left: 1.2rem;
+  }
+
+  .references__list li + li {
+    margin-top: 0.5rem;
+  }
+
+  .references__list a {
+    color: #285ea8;
+  }
+
   .article-actions {
     margin-top: 1.75rem;
     padding-top: 1.25rem;
@@ -112,6 +196,10 @@ const { Content } = await render(post);
     .article-card {
       padding: 1.2rem;
       border-radius: 18px;
+    }
+
+    .meta-grid {
+      grid-template-columns: 1fr;
     }
   }
 </style>

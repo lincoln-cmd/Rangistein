@@ -9,6 +9,10 @@ tags:
   - "공부 노트"
 type: "latest"
 publishedAt: "2026-04-12"
+updatedAt: "2026-04-14"
+draft: false
+featured: false
+references: []
 ---
 
 화학 결합은 원자의 전자 배치와 밀접하게 연결됩니다.

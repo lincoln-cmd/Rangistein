@@ -9,6 +9,12 @@ tags:
   - "공부 노트"
 type: "latest"
 publishedAt: "2026-04-13"
+updatedAt: "2026-04-14"
+draft: false
+featured: true
+references:
+  - title: "Astro Markdown Content Guide"
+    url: "https://docs.astro.build/en/guides/markdown-content/"
 ---
 
 양자역학은 미시 세계를 설명하는 핵심 이론입니다.

@@ -8,6 +8,10 @@ tags:
   - "생명과학"
 type: "study"
 publishedAt: "2026-04-10"
+updatedAt: "2026-04-14"
+draft: false
+featured: false
+references: []
 ---
 
 세포 호흡은 생명체가 에너지를 얻는 핵심 과정입니다.

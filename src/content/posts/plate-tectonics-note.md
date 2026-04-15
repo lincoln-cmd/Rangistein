@@ -8,6 +8,10 @@ tags:
   - "지구과학"
 type: "study"
 publishedAt: "2026-04-09"
+updatedAt: "2026-04-14"
+draft: false
+featured: false
+references: []
 ---
 
 판 구조론은 현대 지구과학의 핵심 틀입니다.
