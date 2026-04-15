@@ -1,5 +1,5 @@
 ---
-title: test
+title: test post (배포 확인 테스트용)
 description: This is test post
 category: 수학
 categorySlug: math
