@@ -3,7 +3,15 @@ import { getCollection } from "astro:content";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 
 const posts = await getCollection("posts", ({ data }) => !data.draft);
-const tags = Array.from(new Set(posts.flatMap((post) => post.data.tags))).sort();
+
+const tagCounts = Array.from(
+  posts.flatMap((post) => post.data.tags),
+).reduce<Record<string, number>>((acc, tag) => {
+  acc[tag] = (acc[tag] ?? 0) + 1;
+  return acc;
+}, {});
+
+const tags = Object.entries(tagCounts).sort((a, b) => a[0].localeCompare(b[0], "ko"));
 ---
 
 <SiteLayout title="태그 | 랑이슈타인" currentPath="/tags/">
@@ -11,13 +19,16 @@ const tags = Array.from(new Set(posts.flatMap((post) => post.data.tags))).sort()
     <p class="eyebrow">Tag Index</p>
     <h1 class="page-title">태그</h1>
     <p class="page-description">
-      현재 등록된 게시물 태그 목록입니다. 이후 태그 상세 페이지로 확장할 예정입니다.
+      현재 등록된 게시물 태그 목록입니다. 태그를 클릭하면 관련 게시물만 모아볼 수 있습니다.
     </p>
   </section>
 
   <section class="tag-wrap section-card">
-    {tags.map((tag) => (
-      <span class="tag-chip">#{tag}</span>
+    {tags.map(([tag, count]) => (
+      <a href={`/tags/${encodeURIComponent(tag)}/`} class="tag-chip">
+        <span>#{tag}</span>
+        <span class="tag-chip__count">{count}</span>
+      </a>
     ))}
   </section>
 </SiteLayout>
@@ -58,11 +69,32 @@ const tags = Array.from(new Set(posts.flatMap((post) => post.data.tags))).sort()
   .tag-chip {
     display: inline-flex;
     align-items: center;
+    gap: 0.55rem;
     padding: 0.7rem 1rem;
     border-radius: 999px;
     background: #eef5fc;
     color: #244f84;
     font-size: 0.94rem;
     font-weight: 700;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .tag-chip:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(24, 62, 105, 0.1);
+    background: #e4f0fb;
+  }
+
+  .tag-chip__count {
+    display: inline-flex;
+    min-width: 1.5rem;
+    justify-content: center;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(36, 79, 132, 0.12);
+    font-size: 0.82rem;
   }
 </style>
