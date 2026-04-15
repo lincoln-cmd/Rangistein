@@ -2,6 +2,16 @@ import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 
+const dateField = z
+  .union([z.string(), z.date()])
+  .transform((value) => {
+    if (typeof value === "string") {
+      return value;
+    }
+
+    return value.toISOString().slice(0, 10);
+  });
+
 const postsCollection = defineCollection({
   loader: glob({
     pattern: "**/*.md",
@@ -14,8 +24,8 @@ const postsCollection = defineCollection({
     categorySlug: z.string(),
     tags: z.array(z.string()),
     type: z.enum(["latest", "study"]),
-    publishedAt: z.string(),
-    updatedAt: z.string().optional(),
+    publishedAt: dateField,
+    updatedAt: dateField.optional(),
     draft: z.boolean().default(false),
     featured: z.boolean().default(false),
     references: z
