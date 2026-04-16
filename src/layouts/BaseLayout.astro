@@ -4,12 +4,20 @@ import { siteDescription, siteTitle } from "../data/site";
 export interface Props {
   title?: string;
   description?: string;
+  image?: string;
+  noIndex?: boolean;
 }
 
 const {
   title = siteTitle,
   description = siteDescription,
+  image = "/favicon.png",
+  noIndex = false,
 } = Astro.props;
+
+const siteUrl = Astro.site ?? new URL("https://rangistein.pages.dev");
+const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
+const ogImageUrl = new URL(image, siteUrl).toString();
 ---
 
 <!DOCTYPE html>
@@ -21,13 +29,22 @@ const {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
-    <meta name="robots" content="index,follow" />
+    <meta name="robots" content={noIndex ? "noindex,nofollow" : "index,follow"} />
     <meta name="theme-color" content="#16304a" />
+    <link rel="canonical" href={canonicalUrl} />
 
     <meta property="og:type" content="website" />
     <meta property="og:locale" content="ko_KR" />
+    <meta property="og:site_name" content={siteTitle} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
 
     <title>{title}</title>
   </head>

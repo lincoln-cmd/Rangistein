@@ -14,9 +14,12 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const { Content } = await render(post);
 const references = post.data.references ?? [];
+
+const pageTitle = `${post.data.title} | 랑이슈타인`;
+const pageDescription = post.data.description;
 ---
 
-<SiteLayout title={`${post.data.title} | 랑이슈타인`}>
+<SiteLayout title={pageTitle} description={pageDescription}>
   <article class="article-card">
     <p class="eyebrow">{post.data.category} · {post.data.publishedAt}</p>
     <h1 class="article-title">{post.data.title}</h1>
@@ -43,7 +46,7 @@ const references = post.data.references ?? [];
 
     <div class="tag-list">
       {post.data.tags.map((tag: string) => (
-        <a href="/tags/" class="tag-chip">#{tag}</a>
+        <a href={`/tags/${encodeURIComponent(tag)}/`} class="tag-chip">#{tag}</a>
       ))}
     </div>
 
