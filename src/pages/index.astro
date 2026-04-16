@@ -101,7 +101,11 @@ const featuredTags = Array.from(
     <p class="section-text">
       김동훈 · 과학 이론, 최신 동향, 논문 요약, 개인 학습 기록을 정리하는 개인 웹 아카이브 운영
     </p>
-    <p class="footer__meta">Contact · 추후 이메일 / GitHub 링크 추가 예정</p>
+    <p class="footer__meta">
+      <a href="/about/">소개</a> ·
+      <a href="https://github.com/lincoln-cmd/Rangistein" target="_blank" rel="noreferrer">GitHub</a> ·
+      <a href="/admin/index.html">관리자</a>
+    </p>
   </footer>
 </SiteLayout>
 
@@ -251,6 +255,11 @@ const featuredTags = Array.from(
     margin: 0.6rem 0 0;
     color: #6a7988;
     font-size: 0.92rem;
+  }
+
+  .footer__meta a {
+    color: #285ea8;
+    font-weight: 700;
   }
 
   @media (max-width: 1080px) {

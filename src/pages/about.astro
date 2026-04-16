@@ -1,0 +1,120 @@
+---
+import SiteLayout from "../layouts/SiteLayout.astro";
+
+const pageTitle = "소개 | 랑이슈타인";
+const pageDescription =
+  "랑이슈타인은 과학 이론, 최신 동향, 논문 요약, 개인 학습 기록을 정리하는 개인 과학 웹 아카이브입니다.";
+---
+
+<SiteLayout title={pageTitle} description={pageDescription} currentPath="/about/">
+  <section class="section-card hero-card">
+    <p class="eyebrow">About Rangistein</p>
+    <h1 class="page-title">랑이슈타인 소개</h1>
+    <p class="page-description">
+      랑이슈타인은 수학, 물리, 화학, 생명과학, 지구과학, 천문학을 중심으로
+      과학 이론과 최신 동향, 논문 요약, 개인 학습 기록을 정리하는 개인 과학 웹 아카이브입니다.
+    </p>
+  </section>
+
+  <section class="section-card">
+    <h2 class="section-title">이 사이트에서 다루는 것</h2>
+    <ul class="info-list">
+      <li>과학 기초 개념과 이론 정리</li>
+      <li>최신 연구 동향 및 논문 요약</li>
+      <li>개인 공부 노트와 복습 기록</li>
+      <li>향후 포트폴리오 성격의 프로젝트 기록</li>
+    </ul>
+  </section>
+
+  <section class="section-card">
+    <h2 class="section-title">운영 방향</h2>
+    <p class="section-text">
+      단순한 링크 모음이나 기사 번역이 아니라, 직접 이해한 내용을 바탕으로
+      정리와 요약, 해설을 덧붙이는 방식으로 운영합니다.
+      가능한 한 출처와 참고 자료를 함께 남기고, 개인 학습 기록과 사실 정보를 구분해 정리하는 것을 목표로 합니다.
+    </p>
+  </section>
+
+  <section class="section-card">
+    <h2 class="section-title">관리자</h2>
+    <p class="section-text">
+      김동훈 · 과학과 글쓰기, 그리고 개인 웹 아카이브 구축에 관심을 두고 운영 중입니다.
+    </p>
+    <div class="link-row">
+      <a href="https://github.com/lincoln-cmd/Rangistein" target="_blank" rel="noreferrer" class="action-link">
+        GitHub 저장소 보기
+      </a>
+      <a href="/admin/index.html" class="action-link">관리자 페이지</a>
+    </div>
+  </section>
+</SiteLayout>
+
+<style>
+  .section-card {
+    padding: 1.5rem;
+    border: 1px solid #dde5ed;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(19, 36, 59, 0.06);
+  }
+
+  .hero-card {
+    background:
+      linear-gradient(135deg, rgba(21, 45, 86, 0.04), rgba(24, 110, 128, 0.05)),
+      #ffffff;
+  }
+
+  .eyebrow {
+    margin: 0 0 0.4rem;
+    color: #51719a;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .page-title {
+    margin: 0 0 0.6rem;
+    font-size: clamp(1.9rem, 3vw, 2.8rem);
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+  }
+
+  .page-description,
+  .section-text {
+    margin: 0;
+    color: #58697a;
+  }
+
+  .section-title {
+    margin: 0 0 0.85rem;
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .info-list {
+    margin: 0;
+    padding-left: 1.2rem;
+    color: #2e3c49;
+  }
+
+  .info-list li + li {
+    margin-top: 0.45rem;
+  }
+
+  .link-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .action-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.7rem 1rem;
+    border-radius: 999px;
+    background: #eef5fc;
+    color: #244f84;
+    font-weight: 700;
+  }
+</style>
