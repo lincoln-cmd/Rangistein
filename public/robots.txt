@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://rangistein.pages.dev/sitemap-index.xml
