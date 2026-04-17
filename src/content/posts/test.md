@@ -11,17 +11,16 @@ updatedAt: 2026-04-15
 draft: false
 featured: false
 ---
+This is test post.
+
+This is test post.
+
+This is test post.
+
+This is test post.
 
 This is test post.
 
 
-This is test post.
 
-
-This is test post.
-
-
-This is test post.
-
-
-This is test post.
+![test image](/uploads/랑이슈타인-표지-이미지-.png "Rang")
