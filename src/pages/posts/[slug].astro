@@ -205,4 +205,74 @@ const pageDescription = post.data.description;
       grid-template-columns: 1fr;
     }
   }
+
+  .article-body :global(img) {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin: 1.4rem auto;
+    border: 1px solid #e4ebf2;
+    border-radius: 18px;
+    background: #f8fbfe;
+    box-shadow: 0 10px 24px rgba(19, 36, 59, 0.08);
+  }
+
+  .article-body :global(figure) {
+    margin: 1.6rem 0;
+  }
+
+  .article-body :global(figure img) {
+    margin: 0;
+  }
+
+  .article-body :global(figcaption) {
+    margin-top: 0.7rem;
+    color: #6a7988;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  .article-body :global(blockquote) {
+    margin: 1.4rem 0;
+    padding: 0.9rem 1rem;
+    border-left: 4px solid #bfd3ea;
+    background: #f7fbff;
+    color: #476072;
+  }
+
+  .article-body :global(ul),
+  .article-body :global(ol) {
+    margin: 1rem 0 1rem 1.25rem;
+    color: #2e3c49;
+  }
+
+  .article-body :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5rem 0;
+    overflow: hidden;
+    border: 1px solid #dde5ed;
+    border-radius: 14px;
+    background: #ffffff;
+  }
+
+  .article-body :global(th),
+  .article-body :global(td) {
+    padding: 0.8rem 0.9rem;
+    border-bottom: 1px solid #e4ebf2;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .article-body :global(th) {
+    background: #f5f9fd;
+    color: #35516e;
+    font-weight: 700;
+  }
+
+  .article-body :global(tr:last-child td) {
+    border-bottom: none;
+  }
 </style>
