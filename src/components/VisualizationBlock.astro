@@ -1,0 +1,143 @@
+---
+import ChartBlock from "./ChartBlock.astro";
+
+const { viz } = Astro.props;
+
+const splitCommaText = (text?: string) =>
+  (text ?? "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+
+const headers = splitCommaText(viz.headersText);
+const rows = (viz.rowsText ?? []).map((rowItem: { row: string }) =>
+  splitCommaText(rowItem.row),
+);
+
+const labels = splitCommaText(viz.labelsText);
+
+const normalizedDatasets = (viz.datasetsText ?? []).map(
+  (
+    dataset: {
+      label: string;
+      dataText: string;
+      borderColor?: string;
+      backgroundColor?: string;
+    },
+    index: number,
+  ) => ({
+    label: dataset.label,
+    data: splitCommaText(dataset.dataText).map((value) => Number(value)),
+    borderColor:
+      dataset.borderColor ||
+      ["#285ea8", "#2f7d95", "#5a7f2b", "#8d5fd3", "#c96a1b"][index % 5],
+    backgroundColor:
+      dataset.backgroundColor ||
+      [
+        "rgba(40, 94, 168, 0.2)",
+        "rgba(47, 125, 149, 0.2)",
+        "rgba(90, 127, 43, 0.2)",
+        "rgba(141, 95, 211, 0.2)",
+        "rgba(201, 106, 27, 0.2)",
+      ][index % 5],
+  }),
+);
+---
+
+{viz.type === "table" ? (
+  <figure class="viz-block">
+    {viz.title && <h3 class="viz-block__title">{viz.title}</h3>}
+
+    <div class="viz-block__table-wrap">
+      <table class="viz-block__table">
+        {headers.length > 0 && (
+          <thead>
+            <tr>
+              {headers.map((header: string) => (
+                <th>{header}</th>
+              ))}
+            </tr>
+          </thead>
+        )}
+        <tbody>
+          {rows.map((row: string[]) => (
+            <tr>
+              {row.map((cell) => (
+                <td>{cell}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    {viz.caption && <figcaption class="viz-block__caption">{viz.caption}</figcaption>}
+  </figure>
+) : (
+  <ChartBlock
+    vizId={viz.id}
+    type={viz.type}
+    labels={labels}
+    datasets={normalizedDatasets}
+    title={viz.title}
+    caption={viz.caption}
+    xLabel={viz.xLabel}
+    yLabel={viz.yLabel}
+    stacked={viz.stacked}
+  />
+)}
+
+<style>
+  .viz-block {
+    margin: 1.8rem 0;
+    padding: 1rem;
+    border: 1px solid #dde5ed;
+    border-radius: 18px;
+    background: #fbfdff;
+  }
+
+  .viz-block__title {
+    margin: 0 0 0.9rem;
+    font-size: 1.05rem;
+    color: #244f84;
+  }
+
+  .viz-block__table-wrap {
+    overflow-x: auto;
+  }
+
+  .viz-block__table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    border: 1px solid #dde5ed;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+
+  .viz-block__table th,
+  .viz-block__table td {
+    padding: 0.8rem 0.9rem;
+    border-bottom: 1px solid #e4ebf2;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .viz-block__table th {
+    background: #f5f9fd;
+    color: #35516e;
+    font-weight: 700;
+  }
+
+  .viz-block__table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .viz-block__caption {
+    margin-top: 0.8rem;
+    color: #6a7988;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    text-align: center;
+  }
+</style>

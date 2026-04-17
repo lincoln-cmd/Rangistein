@@ -12,6 +12,38 @@ const dateField = z
     return value.toISOString().slice(0, 10);
   });
 
+const visualizationSchema = z.object({
+  id: z.string(),
+  type: z.enum(["table", "bar", "line"]),
+  title: z.string().optional(),
+  caption: z.string().optional(),
+
+  headersText: z.string().optional(),
+  rowsText: z
+    .array(
+      z.object({
+        row: z.string(),
+      }),
+    )
+    .default([]),
+
+  labelsText: z.string().optional(),
+  datasetsText: z
+    .array(
+      z.object({
+        label: z.string(),
+        dataText: z.string(),
+        borderColor: z.string().optional(),
+        backgroundColor: z.string().optional(),
+      }),
+    )
+    .default([]),
+
+  xLabel: z.string().optional(),
+  yLabel: z.string().optional(),
+  stacked: z.boolean().optional(),
+});
+
 const postsCollection = defineCollection({
   loader: glob({
     pattern: "**/*.md",
@@ -36,6 +68,7 @@ const postsCollection = defineCollection({
         }),
       )
       .default([]),
+    visualizations: z.array(visualizationSchema).default([]),
   }),
 });
 

@@ -1,6 +1,8 @@
 ---
-import { getCollection, render } from "astro:content";
+import { getCollection } from "astro:content";
+import { marked } from "marked";
 import SiteLayout from "../../layouts/SiteLayout.astro";
+import VisualizationBlock from "../../components/VisualizationBlock.astro";
 
 export async function getStaticPaths() {
   const posts = await getCollection("posts", ({ data }) => !data.draft);
@@ -12,11 +14,54 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await render(post);
 const references = post.data.references ?? [];
+const visualizations = post.data.visualizations ?? [];
 
 const pageTitle = `${post.data.title} | 랑이슈타인`;
 const pageDescription = post.data.description;
+
+const rawBody = post.body ?? "";
+const markerRegex = /\{\{viz:([\w-]+)\}\}/g;
+
+type Segment =
+  | { type: "markdown"; content: string }
+  | { type: "viz"; id: string };
+
+const segments: Segment[] = [];
+let lastIndex = 0;
+let match: RegExpExecArray | null;
+
+while ((match = markerRegex.exec(rawBody)) !== null) {
+  const before = rawBody.slice(lastIndex, match.index);
+  if (before.trim()) {
+    segments.push({ type: "markdown", content: before });
+  }
+
+  segments.push({ type: "viz", id: match[1] });
+  lastIndex = match.index + match[0].length;
+}
+
+const rest = rawBody.slice(lastIndex);
+if (rest.trim()) {
+  segments.push({ type: "markdown", content: rest });
+}
+
+if (segments.length === 0 && rawBody.trim()) {
+  segments.push({ type: "markdown", content: rawBody });
+}
+
+const renderedSegments = segments.map((segment) => {
+  if (segment.type === "markdown") {
+    return {
+      type: "markdown" as const,
+      html: marked.parse(segment.content),
+    };
+  }
+
+  return segment;
+});
+
+const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
 ---
 
 <SiteLayout title={pageTitle} description={pageDescription}>
@@ -51,7 +96,17 @@ const pageDescription = post.data.description;
     </div>
 
     <div class="article-body">
-      <Content />
+      {renderedSegments.map((segment) =>
+        segment.type === "markdown" ? (
+          <Fragment set:html={segment.html} />
+        ) : vizMap.has(segment.id) ? (
+          <VisualizationBlock viz={vizMap.get(segment.id)} />
+        ) : (
+          <div class="viz-missing">
+            시각화 블록 <code>{segment.id}</code> 를 찾을 수 없습니다.
+          </div>
+        ),
+      )}
     </div>
 
     {references.length > 0 && (
@@ -158,54 +213,6 @@ const pageDescription = post.data.description;
     line-height: 1.8;
   }
 
-  .references {
-    margin-top: 1.75rem;
-    padding: 1.2rem;
-    border: 1px solid #e4ebf2;
-    border-radius: 18px;
-    background: #fbfdff;
-  }
-
-  .references__title {
-    margin: 0 0 0.75rem;
-    font-size: 1.1rem;
-  }
-
-  .references__list {
-    margin: 0;
-    padding-left: 1.2rem;
-  }
-
-  .references__list li + li {
-    margin-top: 0.5rem;
-  }
-
-  .references__list a {
-    color: #285ea8;
-  }
-
-  .article-actions {
-    margin-top: 1.75rem;
-    padding-top: 1.25rem;
-    border-top: 1px solid #e4ebf2;
-  }
-
-  .back-link {
-    color: #285ea8;
-    font-weight: 700;
-  }
-
-  @media (max-width: 820px) {
-    .article-card {
-      padding: 1.2rem;
-      border-radius: 18px;
-    }
-
-    .meta-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-
   .article-body :global(img) {
     display: block;
     width: 100%;
@@ -274,5 +281,62 @@ const pageDescription = post.data.description;
 
   .article-body :global(tr:last-child td) {
     border-bottom: none;
+  }
+
+  .viz-missing {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    border: 1px dashed #d7a3a3;
+    border-radius: 14px;
+    background: #fff7f7;
+    color: #8a4a4a;
+  }
+
+  .references {
+    margin-top: 1.75rem;
+    padding: 1.2rem;
+    border: 1px solid #e4ebf2;
+    border-radius: 18px;
+    background: #fbfdff;
+  }
+
+  .references__title {
+    margin: 0 0 0.75rem;
+    font-size: 1.1rem;
+  }
+
+  .references__list {
+    margin: 0;
+    padding-left: 1.2rem;
+  }
+
+  .references__list li + li {
+    margin-top: 0.5rem;
+  }
+
+  .references__list a {
+    color: #285ea8;
+  }
+
+  .article-actions {
+    margin-top: 1.75rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid #e4ebf2;
+  }
+
+  .back-link {
+    color: #285ea8;
+    font-weight: 700;
+  }
+
+  @media (max-width: 820px) {
+    .article-card {
+      padding: 1.2rem;
+      border-radius: 18px;
+    }
+
+    .meta-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
