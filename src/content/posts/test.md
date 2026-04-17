@@ -10,6 +10,19 @@ publishedAt: 2026-04-15
 updatedAt: 2026-04-15
 draft: false
 featured: false
+visualizations:
+  - stacked: true
+    title: Test Chart
+    rows:
+      - columns:
+          - "10"
+    type: table
+    id: viz:chart-1
+    yLabel: y
+    datasets: []
+    xLabel: x
+    labels:
+      - x
 ---
 This is test post.
 
