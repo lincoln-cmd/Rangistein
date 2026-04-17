@@ -18,9 +18,9 @@
 {{viz:table-1}}
 {{viz:chart-1}}
 
-여기서 `table-1`, `chart-1`은 visualizations 배열 안의 `id`와 일치해야 한다.
+여기서 `table-1`, `chart-1`은 visualizations 배열 안의 `id`와 정확히 일치해야 한다.
 
-## visualizations 필드 구조
+## 현재 입력 방식
 
 ### 공통
 
@@ -31,23 +31,48 @@
 
 ### table
 
-- headers
-- rows
+- headersText
+- rowsText[].row
 
 ### bar / line
 
-- labels
-- datasets
+- labelsText
+- datasetsText[].label
+- datasetsText[].dataText
 - xLabel
 - yLabel
 - stacked
 
-## dataset 구조
+## 입력 규칙
 
-- label
-- data
-- borderColor
-- backgroundColor
+### 표 헤더
+
+쉼표로 구분한 한 줄 문자열로 입력한다.
+
+예:
+항목, 값
+
+### 표 행
+
+각 행을 하나의 문자열로 입력하고, 쉼표로 열을 구분한다.
+
+예:
+질량, 3.2
+속도, 12.4
+
+### 차트 라벨
+
+쉼표로 구분한 한 줄 문자열로 입력한다.
+
+예:
+1일차, 2일차, 3일차
+
+### 차트 데이터셋 값
+
+숫자를 쉼표로 구분한 한 줄 문자열로 입력한다.
+
+예:
+10, 14, 18
 
 ## 작성 예시
 
@@ -55,23 +80,52 @@
 
 - id: table-1
 - type: table
-- headers: [항목, 값]
-- rows:
-  - [질량, 3.2]
-  - [속도, 12.4]
+- title: 실험 데이터 표
+- caption: 간단한 표 예시
+- headersText: 항목, 값
+- rowsText:
+  - row: 질량, 3.2
+  - row: 속도, 12.4
+
+본문:
+{{viz:table-1}}
 
 ### 차트 예시
 
 - id: chart-1
 - type: bar
-- labels: [1일차, 2일차, 3일차]
-- datasets:
+- title: 막대 차트 예시
+- caption: 일자별 측정값
+- labelsText: 1일차, 2일차, 3일차
+- datasetsText:
   - label: 측정값
-    data: [10, 14, 18]
+    dataText: 10, 14, 18
+    borderColor: "#285ea8"
+    backgroundColor: "rgba(40, 94, 168, 0.2)"
+- xLabel: 일자
+- yLabel: 값
+- stacked: false
 
-## 다음 구현 단계
+본문:
+{{viz:chart-1}}
 
-1. 본문 내 {{viz:...}} 마커 탐지
-2. 시각화 블록 렌더링 컴포넌트 구현
-3. 표/막대/선 차트 렌더링
-4. 캡션/제목/반응형 스타일 보강
+## 운영 시 주의 사항
+
+- 본문 마커 ID와 블록 ID가 다르면 렌더링되지 않는다.
+- 표와 차트 모두 쉼표 입력 규칙을 지켜야 한다.
+- 숫자 데이터에 불필요한 문자나 괄호를 넣지 않는다.
+- line 차트도 bar 차트와 같은 방식으로 입력하되 type만 line으로 바꾼다.
+
+## V1 완료 기준
+
+1. 표 렌더링 정상
+2. 막대 차트 렌더링 정상
+3. 선 차트 렌더링 정상
+4. 제목 / 캡션 / 축 이름 표시 정상
+5. 본문 마커 치환 정상
+
+## 다음 단계
+
+- 수식 입력 기능 추가
+- 화학식 입력 기능 추가
+- 시각화 입력 UX 개선
