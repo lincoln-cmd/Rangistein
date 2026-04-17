@@ -11,69 +11,71 @@ const {
   stacked = false,
 } = Astro.props;
 
-const canvasId = `chart-${vizId}`;
 const chartType = type === "line" ? "line" : "bar";
+
+const chartConfig = JSON.stringify({
+  type: chartType,
+  data: {
+    labels,
+    datasets,
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        stacked,
+        title: xLabel
+          ? {
+              display: true,
+              text: xLabel,
+            }
+          : undefined,
+      },
+      y: {
+        stacked,
+        beginAtZero: true,
+        title: yLabel
+          ? {
+              display: true,
+              text: yLabel,
+            }
+          : undefined,
+      },
+    },
+  },
+});
 ---
 
 <figure class="viz-block">
   {title && <h3 class="viz-block__title">{title}</h3>}
   <div class="viz-block__canvas-wrap">
-    <canvas id={canvasId}></canvas>
+    <canvas
+      class="viz-chart"
+      data-viz-id={vizId}
+      data-chart-config={chartConfig}
+    ></canvas>
   </div>
   {caption && <figcaption class="viz-block__caption">{caption}</figcaption>}
 </figure>
 
-<script
-  define:vars={{
-    canvasId,
-    chartType,
-    labels,
-    datasets,
-    xLabel,
-    yLabel,
-    stacked,
-  }}
->
+<script>
   import { Chart, registerables } from "chart.js";
 
   Chart.register(...registerables);
 
-  const canvas = document.getElementById(canvasId);
+  document.querySelectorAll("canvas.viz-chart[data-chart-config]").forEach((canvas) => {
+    if (!(canvas instanceof HTMLCanvasElement)) return;
+    if (canvas.dataset.chartInitialized === "true") return;
 
-  if (canvas) {
-    new Chart(canvas, {
-      type: chartType,
-      data: {
-        labels,
-        datasets,
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-          x: {
-            stacked,
-            title: xLabel
-              ? {
-                  display: true,
-                  text: xLabel,
-                }
-              : undefined,
-          },
-          y: {
-            stacked,
-            beginAtZero: true,
-            title: yLabel
-              ? {
-                  display: true,
-                  text: yLabel,
-                }
-              : undefined,
-          },
-        },
-      },
-    });
-  }
+    const rawConfig = canvas.dataset.chartConfig;
+    if (!rawConfig) return;
+
+    const parsedConfig = JSON.parse(rawConfig);
+
+    new Chart(canvas, parsedConfig);
+    canvas.dataset.chartInitialized = "true";
+  });
 </script>
 
 <style>
