@@ -1,0 +1,113 @@
+---
+const {
+  vizId,
+  type,
+  labels = [],
+  datasets = [],
+  title,
+  caption,
+  xLabel,
+  yLabel,
+  stacked = false,
+} = Astro.props;
+
+const canvasId = `chart-${vizId}`;
+const chartType = type === "line" ? "line" : "bar";
+---
+
+<figure class="viz-block">
+  {title && <h3 class="viz-block__title">{title}</h3>}
+  <div class="viz-block__canvas-wrap">
+    <canvas id={canvasId}></canvas>
+  </div>
+  {caption && <figcaption class="viz-block__caption">{caption}</figcaption>}
+</figure>
+
+<script
+  define:vars={{
+    canvasId,
+    chartType,
+    labels,
+    datasets,
+    xLabel,
+    yLabel,
+    stacked,
+  }}
+>
+  import { Chart, registerables } from "chart.js";
+
+  Chart.register(...registerables);
+
+  const canvas = document.getElementById(canvasId);
+
+  if (canvas) {
+    new Chart(canvas, {
+      type: chartType,
+      data: {
+        labels,
+        datasets,
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            stacked,
+            title: xLabel
+              ? {
+                  display: true,
+                  text: xLabel,
+                }
+              : undefined,
+          },
+          y: {
+            stacked,
+            beginAtZero: true,
+            title: yLabel
+              ? {
+                  display: true,
+                  text: yLabel,
+                }
+              : undefined,
+          },
+        },
+      },
+    });
+  }
+</script>
+
+<style>
+  .viz-block {
+    margin: 1.8rem 0;
+    padding: 1rem;
+    border: 1px solid #dde5ed;
+    border-radius: 18px;
+    background: #fbfdff;
+  }
+
+  .viz-block__title {
+    margin: 0 0 0.9rem;
+    font-size: 1.05rem;
+    color: #244f84;
+  }
+
+  .viz-block__canvas-wrap {
+    position: relative;
+    width: 100%;
+    min-height: 320px;
+  }
+
+  .viz-block__caption {
+    margin-top: 0.8rem;
+    color: #6a7988;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    text-align: center;
+  }
+
+  @media (max-width: 820px) {
+    .viz-block__canvas-wrap {
+      min-height: 260px;
+    }
+  }
+</style>
