@@ -13,13 +13,13 @@ featured: false
 ---
 This is test post.
 
+![test image2](/uploads/artwork.png "tttt")
+
 This is test post.
 
 This is test post.
 
 ![test image](/uploads/랑이슈타인-표지-이미지-.png "Range")
-
-
 
 This is test post.
 
