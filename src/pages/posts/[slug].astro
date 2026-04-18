@@ -1,6 +1,12 @@
 ---
 import { getCollection } from "astro:content";
-import { marked } from "marked";
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import remarkRehype from "remark-rehype";
+import rehypeMathjax from "rehype-mathjax";
+import rehypeStringify from "rehype-stringify";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 import VisualizationBlock from "../../components/VisualizationBlock.astro";
 
@@ -50,16 +56,35 @@ if (segments.length === 0 && rawBody.trim()) {
   segments.push({ type: "markdown", content: rawBody });
 }
 
-const renderedSegments = segments.map((segment) => {
-  if (segment.type === "markdown") {
-    return {
-      type: "markdown" as const,
-      html: marked.parse(segment.content),
-    };
-  }
+async function renderMarkdownSegment(content: string) {
+  const file = await unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkMath)
+    .use(remarkRehype)
+    .use(rehypeMathjax, {
+      tex: {
+        packages: { "[+]": ["mhchem"] },
+      },
+    })
+    .use(rehypeStringify)
+    .process(content);
 
-  return segment;
-});
+  return String(file);
+}
+
+const renderedSegments = await Promise.all(
+  segments.map(async (segment) => {
+    if (segment.type === "markdown") {
+      return {
+        type: "markdown" as const,
+        html: await renderMarkdownSegment(segment.content),
+      };
+    }
+
+    return segment;
+  }),
+);
 
 const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
 ---
@@ -281,6 +306,11 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
 
   .article-body :global(tr:last-child td) {
     border-bottom: none;
+  }
+
+  .article-body :global(.MJX-TEX) {
+    overflow-x: auto;
+    overflow-y: hidden;
   }
 
   .viz-missing {

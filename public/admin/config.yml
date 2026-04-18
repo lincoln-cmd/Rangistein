@@ -159,7 +159,11 @@ collections:
                   label: "행 값",
                   name: "row",
                   widget: "string",
+
                   hint: "한 줄이 표의 한 행입니다. 예: 질량, 3.2",
+
+                  hint: "한 줄이 표의 한 행입니다. 쉼표로 구분합니다. 예: 질량, 3.2",
+
                 }
 
           - {
@@ -216,6 +220,7 @@ collections:
               default: false,
             }
 
+
       - label: "본문"
         name: "body"
         widget: "markdown"
@@ -225,3 +230,9 @@ collections:
           화학식: $\ce{H2O}$
           반응식: $$\ce{2H2 + O2 -> 2H2O}$$
           시각화 삽입: {{viz:table-1}}
+
+            - label: "본문"
+              name: "body"
+              widget: "markdown"
+              hint: "인라인 수식은 $...$, 블록 수식은 $$...$$, 화학식은 \\ce{H2O}, 단위는 \\pu{1.23e4 J} 형태로 입력합니다."
+
