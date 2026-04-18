@@ -5,7 +5,7 @@ import remarkParse from "remark-parse";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import remarkRehype from "remark-rehype";
-import rehypeKatex from "rehype-katex";
+import rehypeMathjax from "rehype-mathjax";
 import rehypeStringify from "rehype-stringify";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 import VisualizationBlock from "../../components/VisualizationBlock.astro";
@@ -62,7 +62,11 @@ async function renderMarkdownSegment(content: string) {
     .use(remarkGfm)
     .use(remarkMath)
     .use(remarkRehype)
-    .use(rehypeKatex)
+    .use(rehypeMathjax, {
+      tex: {
+        packages: { "[+]": ["mhchem"] },
+      },
+    })
     .use(rehypeStringify)
     .process(content);
 
@@ -304,15 +308,9 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
     border-bottom: none;
   }
 
-  .article-body :global(.katex-display) {
-    margin: 1.4rem 0;
+  .article-body :global(.MJX-TEX) {
     overflow-x: auto;
     overflow-y: hidden;
-    padding: 0.2rem 0;
-  }
-
-  .article-body :global(.katex) {
-    font-size: 1.05em;
   }
 
   .viz-missing {
