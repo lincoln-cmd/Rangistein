@@ -203,4 +203,7 @@ collections:
               default: false,
             }
 
-      - { label: "본문", name: "body", widget: "markdown" }
+            - label: "본문"
+              name: "body"
+              widget: "markdown"
+              hint: "인라인 수식은 $...$, 블록 수식은 $$...$$ 형태로 입력합니다."
