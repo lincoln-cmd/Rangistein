@@ -24,8 +24,18 @@ collections:
     format: "frontmatter"
     preview_path: "posts/{{slug}}"
     fields:
-      - { label: "제목", name: "title", widget: "string" }
-      - { label: "설명", name: "description", widget: "text" }
+      - {
+          label: "제목",
+          name: "title",
+          widget: "string",
+          hint: "짧고 명확하게 입력합니다.",
+        }
+      - {
+          label: "설명",
+          name: "description",
+          widget: "text",
+          hint: "게시물 요약을 1~2문장으로 입력합니다.",
+        }
 
       - label: "카테고리"
         name: "category"
@@ -55,6 +65,7 @@ collections:
         name: "tags"
         widget: "list"
         allow_add: true
+        hint: "너무 세분화하지 말고, 같은 의미 태그는 통일해서 사용합니다."
 
       - label: "게시물 유형"
         name: "type"
@@ -100,6 +111,7 @@ collections:
         name: "references"
         widget: "list"
         required: false
+        summary: "{{fields.title}}"
         fields:
           - { label: "자료명", name: "title", widget: "string" }
           - { label: "URL", name: "url", widget: "string" }
@@ -108,13 +120,14 @@ collections:
         name: "visualizations"
         widget: "list"
         required: false
-        summary: "{{fields.type}} · {{fields.id}}"
+        summary: "{{fields.type}} · {{fields.id}} · {{fields.title}}"
+        hint: "본문에서는 {{viz:블록ID}} 형식으로 삽입합니다."
         fields:
           - {
               label: "블록 ID",
               name: "id",
               widget: "string",
-              hint: "본문 삽입 마커 예: {{viz:chart-1}}",
+              hint: "본문에서 {{viz:chart-1}}처럼 정확히 같은 ID를 써야 합니다.",
             }
 
           - label: "시각화 종류"
@@ -133,7 +146,7 @@ collections:
               name: "headersText",
               widget: "string",
               required: false,
-              hint: "예: 항목, 값",
+              hint: "쉼표로 구분해서 입력합니다. 예: 항목, 값",
             }
 
           - label: "표 행"
@@ -146,7 +159,7 @@ collections:
                   label: "행 값",
                   name: "row",
                   widget: "string",
-                  hint: "예: 질량, 3.2",
+                  hint: "한 줄이 표의 한 행입니다. 예: 질량, 3.2",
                 }
 
           - {
@@ -154,7 +167,7 @@ collections:
               name: "labelsText",
               widget: "string",
               required: false,
-              hint: "예: 1일차, 2일차, 3일차",
+              hint: "쉼표로 구분해서 입력합니다. 예: 1일차, 2일차, 3일차",
             }
 
           - label: "차트 데이터셋"
@@ -168,7 +181,7 @@ collections:
                   label: "값 목록",
                   name: "dataText",
                   widget: "string",
-                  hint: "예: 10, 14, 18",
+                  hint: "숫자를 쉼표로 구분해서 입력합니다. 예: 10, 14, 18",
                 }
               - {
                   label: "선 색상",
@@ -203,4 +216,12 @@ collections:
               default: false,
             }
 
-      - { label: "본문", name: "body", widget: "markdown" }
+      - label: "본문"
+        name: "body"
+        widget: "markdown"
+        hint: |
+          인라인 수식: $E = mc^2$
+          블록 수식: $$ \int_0^1 x^2 \, dx = \frac{1}{3} $$
+          화학식: $\ce{H2O}$
+          반응식: $$\ce{2H2 + O2 -> 2H2O}$$
+          시각화 삽입: {{viz:table-1}}
