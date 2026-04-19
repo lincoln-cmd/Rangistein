@@ -82,26 +82,26 @@ const {
     const buildCard = (item) => {
       const anchor = document.createElement("a");
       anchor.href = `/posts/${item.id}/`;
-      anchor.className = "search-card";
+      anchor.className = "post-card";
 
       const meta = document.createElement("p");
-      meta.className = "search-card__meta";
+      meta.className = "post-card__meta";
       meta.textContent = `${item.categoryName} · ${item.publishedAt}${item.featured ? " · 대표 글" : ""}`;
 
       const title = document.createElement("h3");
-      title.className = "search-card__title";
+      title.className = "post-card__title";
       title.textContent = item.title;
 
       const description = document.createElement("p");
-      description.className = "search-card__description";
+      description.className = "post-card__description";
       description.textContent = item.description;
 
       const tagWrap = document.createElement("div");
-      tagWrap.className = "search-card__tags";
+      tagWrap.className = "post-card__tags";
 
       (item.tags || []).forEach((tag) => {
         const span = document.createElement("span");
-        span.className = "search-card__tag";
+        span.className = "post-card__tag";
         span.textContent = `#${tag}`;
         tagWrap.appendChild(span);
       });
@@ -128,13 +128,15 @@ const {
       }
 
       const filtered = items.filter((item) => {
-        const haystack = normalize([
-          item.title,
-          item.description,
-          item.categoryName,
-          item.categorySlug,
-          ...(item.tags || []),
-        ].join(" "));
+        const haystack = normalize(
+          [
+            item.title,
+            item.description,
+            item.categoryName,
+            item.categorySlug,
+            ...(item.tags || []),
+          ].join(" "),
+        );
         return haystack.includes(normalizedQuery);
       });
 
@@ -231,10 +233,10 @@ const {
 
   .search-results {
     display: grid;
-    gap: 0.9rem;
+    gap: 1rem;
   }
 
-  .search-card,
+  .post-card,
   .search-empty {
     display: block;
     padding: 1rem 1.05rem;
@@ -243,46 +245,46 @@ const {
     background: #fbfdff;
   }
 
-  .search-card {
+  .post-card {
     transition:
       transform 0.2s ease,
       box-shadow 0.2s ease,
       border-color 0.2s ease;
   }
 
-  .search-card:hover {
+  .post-card:hover {
     transform: translateY(-2px);
     border-color: #bfd3ea;
     box-shadow: 0 10px 24px rgba(24, 62, 105, 0.08);
   }
 
-  .search-card__meta {
+  .post-card__meta {
     margin: 0 0 0.35rem;
     font-size: 0.82rem;
     font-weight: 700;
     color: #51719a;
   }
 
-  .search-card__title {
+  .post-card__title {
     margin: 0 0 0.45rem;
     font-size: 1.05rem;
     line-height: 1.35;
   }
 
-  .search-card__description {
+  .post-card__description {
     margin: 0;
     color: #58697a;
     font-size: 0.95rem;
   }
 
-  .search-card__tags {
+  .post-card__tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.55rem;
     margin-top: 0.85rem;
   }
 
-  .search-card__tag {
+  .post-card__tag {
     display: inline-flex;
     align-items: center;
     padding: 0.4rem 0.7rem;
