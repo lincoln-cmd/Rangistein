@@ -19,8 +19,6 @@ const {
   emptyMessage = "검색 결과가 없습니다.",
   limit = 50,
 } = Astro.props;
-
-const initialItems = items.slice(0, limit);
 ---
 
 <section class="search-block section-card">
@@ -49,26 +47,10 @@ const initialItems = items.slice(0, limit);
     </label>
 
     <p class="search-summary">
-      전체 <strong>{items.length}</strong>개 게시물
+      검색어를 입력하면 결과가 표시됩니다.
     </p>
 
-    <div class="search-results">
-      {initialItems.map((item: SearchItem) => (
-        <a href={`/posts/${item.id}/`} class="search-card">
-          <p class="search-card__meta">
-            {item.categoryName} · {item.publishedAt}
-            {item.featured ? " · 대표 글" : ""}
-          </p>
-          <h3 class="search-card__title">{item.title}</h3>
-          <p class="search-card__description">{item.description}</p>
-          <div class="search-card__tags">
-            {item.tags.map((tag) => (
-              <span class="search-card__tag">#{tag}</span>
-            ))}
-          </div>
-        </a>
-      ))}
-    </div>
+    <div class="search-results" hidden></div>
   </div>
 </section>
 
@@ -138,26 +120,29 @@ const initialItems = items.slice(0, limit);
     const render = (query) => {
       const normalizedQuery = normalize(query);
 
-      const filtered = normalizedQuery
-        ? items.filter((item) => {
-            const haystack = normalize([
-              item.title,
-              item.description,
-              item.categoryName,
-              item.categorySlug,
-              ...(item.tags || []),
-            ].join(" "));
-            return haystack.includes(normalizedQuery);
-          })
-        : items;
+      if (!normalizedQuery) {
+        summary.textContent = "검색어를 입력하면 결과가 표시됩니다.";
+        results.innerHTML = "";
+        results.hidden = true;
+        return;
+      }
+
+      const filtered = items.filter((item) => {
+        const haystack = normalize([
+          item.title,
+          item.description,
+          item.categoryName,
+          item.categorySlug,
+          ...(item.tags || []),
+        ].join(" "));
+        return haystack.includes(normalizedQuery);
+      });
 
       const visibleItems = filtered.slice(0, limit);
 
-      summary.innerHTML = normalizedQuery
-        ? `검색 결과 <strong>${filtered.length}</strong>개`
-        : `전체 <strong>${items.length}</strong>개 게시물`;
-
+      summary.innerHTML = `검색 결과 <strong>${filtered.length}</strong>개`;
       results.innerHTML = "";
+      results.hidden = false;
 
       if (visibleItems.length === 0) {
         results.appendChild(buildEmpty());
