@@ -1,7 +1,6 @@
 ---
 title: "미적분 복습 노트"
 description: "극한, 연속, 미분의 핵심 개념을 다시 정리한 개인 학습 기록"
-category: "수학"
 categorySlug: "math"
 tags:
   - "공부 노트"

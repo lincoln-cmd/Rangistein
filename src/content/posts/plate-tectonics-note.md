@@ -1,7 +1,6 @@
 ---
 title: "판 구조론 핵심 포인트"
 description: "지구과학 개념 복습을 위한 핵심 정리"
-category: "지구과학"
 categorySlug: "earth-science"
 tags:
   - "공부 노트"

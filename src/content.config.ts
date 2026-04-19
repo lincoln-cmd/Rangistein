@@ -1,6 +1,9 @@
 import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
+import { categories } from "./data/site";
+
+const categorySlugs = categories.map((category) => category.slug) as [string, ...string[]];
 
 const dateField = z
   .union([z.string(), z.date()])
@@ -52,8 +55,7 @@ const postsCollection = defineCollection({
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    category: z.string(),
-    categorySlug: z.string(),
+    categorySlug: z.enum(categorySlugs),
     tags: z.array(z.string()),
     type: z.enum(["latest", "study"]),
     publishedAt: dateField,

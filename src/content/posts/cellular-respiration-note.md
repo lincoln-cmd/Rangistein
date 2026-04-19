@@ -1,7 +1,6 @@
 ---
 title: "세포 호흡 정리"
 description: "생명과학 기초 단원 중 세포 호흡 흐름을 요약한 노트"
-category: "생명과학"
 categorySlug: "biology"
 tags:
   - "공부 노트"

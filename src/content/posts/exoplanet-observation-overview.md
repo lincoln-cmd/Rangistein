@@ -1,7 +1,6 @@
 ---
 title: "외계행성 관측 연구 정리"
 description: "천문학 최신 연구 흐름과 관측 방법을 간단히 정리한 게시물"
-category: "천문학"
 categorySlug: "astronomy"
 tags:
   - "논문 요약"

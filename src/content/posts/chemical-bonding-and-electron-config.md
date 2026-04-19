@@ -1,7 +1,6 @@
 ---
 title: "분자 결합과 전자 배치 기초"
 description: "화학 결합 이해를 위한 핵심 개념을 단계별로 정리"
-category: "화학"
 categorySlug: "chemistry"
 tags:
   - "기초 개념"
