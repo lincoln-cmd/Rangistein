@@ -1,7 +1,6 @@
 ---
 title: "양자역학 입문 개념 노트"
 description: "파동함수, 중첩, 관측 문제를 초보자 관점에서 정리한 글"
-category: "물리"
 categorySlug: "physics"
 tags:
   - "기초 개념"

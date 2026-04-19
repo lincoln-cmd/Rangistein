@@ -9,6 +9,7 @@ import rehypeMathjax from "rehype-mathjax";
 import rehypeStringify from "rehype-stringify";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 import VisualizationBlock from "../../components/VisualizationBlock.astro";
+import { getCategoryBySlug } from "../../data/site";
 
 export async function getStaticPaths() {
   const posts = await getCollection("posts", ({ data }) => !data.draft);
@@ -22,6 +23,9 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const references = post.data.references ?? [];
 const visualizations = post.data.visualizations ?? [];
+
+const category = getCategoryBySlug(post.data.categorySlug);
+const categoryName = category?.name ?? post.data.categorySlug;
 
 const pageTitle = `${post.data.title} | 랑이슈타인`;
 const pageDescription = post.data.description;
@@ -91,14 +95,14 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
 
 <SiteLayout title={pageTitle} description={pageDescription}>
   <article class="article-card">
-    <p class="eyebrow">{post.data.category} · {post.data.publishedAt}</p>
+    <p class="eyebrow">{categoryName} · {post.data.publishedAt}</p>
     <h1 class="article-title">{post.data.title}</h1>
     <p class="article-description">{post.data.description}</p>
 
     <dl class="meta-grid">
       <div>
         <dt>분류</dt>
-        <dd>{post.data.category}</dd>
+        <dd>{categoryName}</dd>
       </div>
       <div>
         <dt>발행일</dt>
@@ -151,7 +155,7 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
 
     <div class="article-actions">
       <a href={`/categories/${post.data.categorySlug}/`} class="back-link">
-        ← {post.data.category} 목록으로
+        ← {categoryName} 목록으로
       </a>
     </div>
   </article>

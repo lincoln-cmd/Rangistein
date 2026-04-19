@@ -1,7 +1,6 @@
 ---
 title: test post (배포 확인 테스트용)
 description: This is test post
-category: 수학
 categorySlug: math
 tags:
   - test
@@ -24,6 +23,7 @@ visualizations:
     labels:
       - x
 ---
+
 This is test post.
 
 ![test image2](/uploads/artwork.png "tttt")

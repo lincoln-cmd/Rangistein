@@ -3,16 +3,24 @@ import { getCollection } from "astro:content";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 import { categories } from "../../data/site";
 
-const allPosts = await getCollection("posts", ({ data }) => !data.draft);
+const posts = await getCollection("posts", ({ data }) => !data.draft);
 
-const categoryCounts = categories.map((category) => ({
-  ...category,
-  count: allPosts.filter((post) => post.data.categorySlug === category.slug).length,
-}));
+const categoryCards = categories.map((category) => {
+  const count = posts.filter((post) => post.data.categorySlug === category.slug).length;
+
+  return {
+    ...category,
+    count,
+  };
+});
 ---
 
-<SiteLayout title="카테고리 | 랑이슈타인" currentPath="/categories/">
-  <section class="section-card">
+<SiteLayout
+  title="카테고리 | 랑이슈타인"
+  description="랑이슈타인에서 다루는 과학 분야와 학습 노트 분류를 한눈에 볼 수 있습니다."
+  currentPath="/categories/"
+>
+  <section class="section-card hero-card">
     <p class="eyebrow">Category Index</p>
     <h1 class="page-title">카테고리</h1>
     <p class="page-description">
@@ -20,10 +28,10 @@ const categoryCounts = categories.map((category) => ({
     </p>
   </section>
 
-  <section class="card-grid">
-    {categoryCounts.map((category) => (
-      <a href={`/categories/${category.slug}/`} class="category-card">
-        <p class="category-card__count">게시물 {category.count}개</p>
+  <section class="category-grid">
+    {categoryCards.map((category) => (
+      <a class="category-card" href={`/categories/${category.slug}/`}>
+        <p class="category-card__meta">게시물 {category.count}개</p>
         <h2 class="category-card__title">{category.name}</h2>
         <p class="category-card__description">{category.description}</p>
       </a>
@@ -40,6 +48,12 @@ const categoryCounts = categories.map((category) => ({
     box-shadow: 0 10px 30px rgba(19, 36, 59, 0.06);
   }
 
+  .hero-card {
+    background:
+      linear-gradient(135deg, rgba(21, 45, 86, 0.04), rgba(24, 110, 128, 0.05)),
+      #ffffff;
+  }
+
   .eyebrow {
     margin: 0 0 0.4rem;
     color: #51719a;
@@ -48,9 +62,10 @@ const categoryCounts = categories.map((category) => ({
   }
 
   .page-title {
-    margin: 0 0 0.5rem;
-    font-size: clamp(1.8rem, 3vw, 2.6rem);
+    margin: 0 0 0.6rem;
+    font-size: clamp(1.9rem, 3vw, 2.8rem);
     line-height: 1.15;
+    letter-spacing: -0.03em;
   }
 
   .page-description {
@@ -58,50 +73,53 @@ const categoryCounts = categories.map((category) => ({
     color: #58697a;
   }
 
-  .card-grid {
+  .category-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1.25rem;
+    gap: 1rem;
   }
 
   .category-card {
     display: block;
     padding: 1.4rem;
     border: 1px solid #dde5ed;
-    border-radius: 18px;
+    border-radius: 20px;
     background: #ffffff;
-    box-shadow: 0 10px 30px rgba(19, 36, 59, 0.05);
+    box-shadow: 0 10px 30px rgba(19, 36, 59, 0.06);
+    text-decoration: none;
+    color: inherit;
     transition:
       transform 0.2s ease,
-      box-shadow 0.2s ease,
-      border-color 0.2s ease;
+      box-shadow 0.2s ease;
   }
 
   .category-card:hover {
     transform: translateY(-2px);
-    border-color: #bfd3ea;
-    box-shadow: 0 12px 28px rgba(24, 62, 105, 0.08);
+    box-shadow: 0 14px 34px rgba(19, 36, 59, 0.1);
   }
 
-  .category-card__count {
-    margin: 0 0 0.35rem;
+  .category-card__meta {
+    margin: 0 0 0.5rem;
     color: #51719a;
-    font-size: 0.84rem;
+    font-size: 0.9rem;
     font-weight: 700;
   }
 
   .category-card__title {
-    margin: 0 0 0.45rem;
-    font-size: 1.2rem;
+    margin: 0 0 0.65rem;
+    font-size: 1.6rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
   }
 
   .category-card__description {
     margin: 0;
     color: #58697a;
+    line-height: 1.7;
   }
 
-  @media (max-width: 900px) {
-    .card-grid {
+  @media (max-width: 820px) {
+    .category-grid {
       grid-template-columns: 1fr;
     }
   }

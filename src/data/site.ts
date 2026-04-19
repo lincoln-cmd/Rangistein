@@ -1,12 +1,12 @@
+export const siteTitle = "랑이슈타인";
+export const siteDescription =
+  "수학, 물리, 화학, 생명과학, 지구과학, 천문학을 중심으로 과학 이론, 최신 동향, 논문 요약, 개인 학습 기록을 정리하는 개인 과학 웹 아카이브입니다.";
+
 export type Category = {
   slug: string;
   name: string;
   description: string;
 };
-
-export const siteTitle = "랑이슈타인";
-export const siteDescription =
-  "과학 이론, 최신 동향, 논문 요약, 개인 학습 기록을 정리하는 개인 과학 웹 아카이브";
 
 export const categories: Category[] = [
   {
@@ -42,6 +42,16 @@ export const categories: Category[] = [
   {
     slug: "study-notes",
     name: "개인 공부 노트",
-    description: "개인 학습 과정에서 정리한 노트를 모아둔 카테고리입니다.",
+    description: "개인 학습 과정에서 정리한 노트를 모아 둔 카테고리입니다.",
   },
 ];
+
+export const categoryMap = new Map(categories.map((category) => [category.slug, category]));
+
+export function getCategoryBySlug(slug: string) {
+  return categoryMap.get(slug);
+}
+
+export function getCategoryName(slug: string) {
+  return getCategoryBySlug(slug)?.name ?? slug;
+}
