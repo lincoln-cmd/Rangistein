@@ -236,8 +236,8 @@ const {
     gap: 1rem;
   }
 
-  .post-card,
-  .search-empty {
+  :global(.search-results .post-card),
+  :global(.search-results .search-empty) {
     display: block;
     padding: 1rem 1.05rem;
     border: 1px solid #e4ebf2;
@@ -245,46 +245,46 @@ const {
     background: #fbfdff;
   }
 
-  .post-card {
+  :global(.search-results .post-card) {
     transition:
       transform 0.2s ease,
       box-shadow 0.2s ease,
       border-color 0.2s ease;
   }
 
-  .post-card:hover {
+  :global(.search-results .post-card:hover) {
     transform: translateY(-2px);
     border-color: #bfd3ea;
     box-shadow: 0 10px 24px rgba(24, 62, 105, 0.08);
   }
 
-  .post-card__meta {
+  :global(.search-results .post-card__meta) {
     margin: 0 0 0.35rem;
     font-size: 0.82rem;
     font-weight: 700;
     color: #51719a;
   }
 
-  .post-card__title {
+  :global(.search-results .post-card__title) {
     margin: 0 0 0.45rem;
     font-size: 1.05rem;
     line-height: 1.35;
   }
 
-  .post-card__description {
+  :global(.search-results .post-card__description) {
     margin: 0;
     color: #58697a;
     font-size: 0.95rem;
   }
 
-  .post-card__tags {
+  :global(.search-results .post-card__tags) {
     display: flex;
     flex-wrap: wrap;
     gap: 0.55rem;
     margin-top: 0.85rem;
   }
 
-  .post-card__tag {
+  :global(.search-results .post-card__tag) {
     display: inline-flex;
     align-items: center;
     padding: 0.4rem 0.7rem;
@@ -295,7 +295,7 @@ const {
     font-weight: 700;
   }
 
-  .search-empty {
+  :global(.search-results .search-empty) {
     color: #58697a;
   }
 
