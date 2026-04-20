@@ -103,6 +103,25 @@ const visualizations = post.data.visualizations ?? [];
 const category = getCategoryBySlug(post.data.categorySlug);
 const categoryName = category?.name ?? post.data.categorySlug;
 
+const allPosts = (await getCollection("posts", ({ data }) => !data.draft)).sort((a, b) =>
+  String(b.data.publishedAt).localeCompare(String(a.data.publishedAt)),
+);
+
+const currentIndex = allPosts.findIndex((item) => item.id === post.id);
+const previousPost = currentIndex > 0 ? allPosts[currentIndex - 1] : null;
+const nextPost =
+  currentIndex >= 0 && currentIndex < allPosts.length - 1
+    ? allPosts[currentIndex + 1]
+    : null;
+
+const previousCategoryName = previousPost
+  ? (getCategoryBySlug(previousPost.data.categorySlug)?.name ?? previousPost.data.categorySlug)
+  : null;
+
+const nextCategoryName = nextPost
+  ? (getCategoryBySlug(nextPost.data.categorySlug)?.name ?? nextPost.data.categorySlug)
+  : null;
+
 const pageTitle = `${post.data.title} | 랑이슈타인`;
 const pageDescription = post.data.description;
 
@@ -242,6 +261,36 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
             </li>
           ))}
         </ul>
+      </section>
+    )}
+
+    {(previousPost || nextPost) && (
+      <section class="post-pagination" aria-label="이전 다음 글">
+        {previousPost ? (
+          <a href={`/posts/${previousPost.id}/`} class="post-pagination__card">
+            <p class="post-pagination__label">이전 글</p>
+            <p class="post-pagination__meta">
+              {previousCategoryName} · {previousPost.data.publishedAt}
+            </p>
+            <h2 class="post-pagination__title">{previousPost.data.title}</h2>
+            <p class="post-pagination__description">{previousPost.data.description}</p>
+          </a>
+        ) : (
+          <div class="post-pagination__card post-pagination__card--empty"></div>
+        )}
+
+        {nextPost ? (
+          <a href={`/posts/${nextPost.id}/`} class="post-pagination__card">
+            <p class="post-pagination__label">다음 글</p>
+            <p class="post-pagination__meta">
+              {nextCategoryName} · {nextPost.data.publishedAt}
+            </p>
+            <h2 class="post-pagination__title">{nextPost.data.title}</h2>
+            <p class="post-pagination__description">{nextPost.data.description}</p>
+          </a>
+        ) : (
+          <div class="post-pagination__card post-pagination__card--empty"></div>
+        )}
       </section>
     )}
 
@@ -510,6 +559,63 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
     color: #285ea8;
   }
 
+  .post-pagination {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+    margin-top: 1.75rem;
+  }
+
+  .post-pagination__card {
+    display: block;
+    padding: 1.15rem 1.2rem;
+    border: 1px solid #e4ebf2;
+    border-radius: 18px;
+    background: #fbfdff;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .post-pagination__card:hover {
+    transform: translateY(-2px);
+    border-color: #bfd3ea;
+    box-shadow: 0 10px 24px rgba(24, 62, 105, 0.08);
+  }
+
+  .post-pagination__card--empty {
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  .post-pagination__label {
+    margin: 0 0 0.45rem;
+    color: #51719a;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .post-pagination__meta {
+    margin: 0 0 0.4rem;
+    color: #6a7988;
+    font-size: 0.88rem;
+    font-weight: 700;
+  }
+
+  .post-pagination__title {
+    margin: 0 0 0.45rem;
+    font-size: 1.05rem;
+    line-height: 1.35;
+  }
+
+  .post-pagination__description {
+    margin: 0;
+    color: #58697a;
+    line-height: 1.65;
+    font-size: 0.94rem;
+  }
+
   .article-actions {
     margin-top: 1.75rem;
     padding-top: 1.25rem;
@@ -533,6 +639,14 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
 
     .toc-card {
       padding: 1rem;
+    }
+
+    .post-pagination {
+      grid-template-columns: 1fr;
+    }
+
+    .post-pagination__card--empty {
+      display: none;
     }
   }
 </style>
