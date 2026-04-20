@@ -12,6 +12,7 @@ import type { Root } from "hast";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 import VisualizationBlock from "../../components/VisualizationBlock.astro";
 import { getCategoryBySlug } from "../../data/site";
+import { getRelatedPosts } from "../../utils/related-posts";
 
 export async function getStaticPaths() {
   const posts = await getCollection("posts", ({ data }) => !data.draft);
@@ -122,28 +123,7 @@ const nextCategoryName = nextPost
   ? (getCategoryBySlug(nextPost.data.categorySlug)?.name ?? nextPost.data.categorySlug)
   : null;
 
-const currentTags = new Set(post.data.tags);
-
-const relatedPosts = allPosts
-  .filter((item) => item.id !== post.id)
-  .map((item) => {
-    const sharedTags = item.data.tags.filter((tag: string) => currentTags.has(tag)).length;
-    const sameCategory = item.data.categorySlug === post.data.categorySlug ? 1 : 0;
-    const score = sharedTags * 10 + sameCategory * 3;
-
-    return {
-      post: item,
-      score,
-      sharedTags,
-      sameCategory,
-    };
-  })
-  .filter((item) => item.score > 0)
-  .sort((a, b) => {
-    if (b.score !== a.score) return b.score - a.score;
-    return String(b.post.data.publishedAt).localeCompare(String(a.post.data.publishedAt));
-  })
-  .slice(0, 3);
+const relatedPosts = getRelatedPosts(post, allPosts, 3);
 
 const pageTitle = `${post.data.title} | 랑이슈타인`;
 const pageDescription = post.data.description;
@@ -295,7 +275,7 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
         </div>
 
         <div class="related-posts__grid">
-          {relatedPosts.map(({ post: related }) => {
+          {relatedPosts.map(({ post: related, sharedTags, sameCategory, sameType }) => {
             const relatedCategoryName =
               getCategoryBySlug(related.data.categorySlug)?.name ?? related.data.categorySlug;
 
@@ -303,9 +283,28 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
               <a href={`/posts/${related.id}/`} class="related-posts__card">
                 <p class="related-posts__meta">
                   {relatedCategoryName} · {related.data.publishedAt}
+                  {related.data.featured ? " · 대표 글" : ""}
                 </p>
                 <h3 class="related-posts__card-title">{related.data.title}</h3>
                 <p class="related-posts__description">{related.data.description}</p>
+
+                <div class="related-posts__signals">
+                  {sameCategory && (
+                    <span class="related-posts__signal related-posts__signal--accent">
+                      같은 카테고리
+                    </span>
+                  )}
+
+                  {sameType && (
+                    <span class="related-posts__signal">
+                      같은 형식
+                    </span>
+                  )}
+
+                  {sharedTags.slice(0, 3).map((tag) => (
+                    <span class="related-posts__signal">#{tag}</span>
+                  ))}
+                </div>
               </a>
             );
           })}
@@ -673,6 +672,30 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
     color: #58697a;
     font-size: 0.94rem;
     line-height: 1.65;
+  }
+
+  .related-posts__signals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+  }
+
+  .related-posts__signal {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.42rem 0.72rem;
+    border-radius: 999px;
+    background: #eef4fb;
+    color: #35516e;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .related-posts__signal--accent {
+    background: #dff1ff;
+    color: #1f5f8b;
   }
 
   .post-pagination {
