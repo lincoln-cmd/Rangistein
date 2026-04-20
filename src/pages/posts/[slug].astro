@@ -7,6 +7,8 @@ import remarkMath from "remark-math";
 import remarkRehype from "remark-rehype";
 import rehypeMathjax from "rehype-mathjax";
 import rehypeStringify from "rehype-stringify";
+import { visit } from "unist-util-visit";
+import type { Root } from "hast";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 import VisualizationBlock from "../../components/VisualizationBlock.astro";
 import { getCategoryBySlug } from "../../data/site";
@@ -18,6 +20,80 @@ export async function getStaticPaths() {
     params: { slug: post.id },
     props: { post },
   }));
+}
+
+type TocItem = {
+  id: string;
+  text: string;
+  level: 2 | 3;
+};
+
+function slugifyHeading(text: string) {
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\p{L}\p{N}\s-]/gu, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
+}
+
+function extractText(node: any): string {
+  if (!node) return "";
+  if (node.type === "text") return node.value ?? "";
+  if (Array.isArray(node.children)) {
+    return node.children.map((child) => extractText(child)).join("");
+  }
+  return "";
+}
+
+function createHeadingPlugin(toc: TocItem[]) {
+  const usedIds = new Map<string, number>();
+
+  return () => (tree: Root) => {
+    visit(tree, "element", (node: any) => {
+      if (!node || !["h2", "h3"].includes(node.tagName)) return;
+
+      const level = Number(node.tagName.slice(1)) as 2 | 3;
+      const text = extractText(node).trim();
+
+      if (!text) return;
+
+      const baseId = slugifyHeading(text) || "section";
+      const currentCount = usedIds.get(baseId) ?? 0;
+      const id = currentCount === 0 ? baseId : `${baseId}-${currentCount + 1}`;
+      usedIds.set(baseId, currentCount + 1);
+
+      node.properties = {
+        ...(node.properties ?? {}),
+        id,
+      };
+
+      node.children = [
+        ...(node.children ?? []),
+        {
+          type: "element",
+          tagName: "a",
+          properties: {
+            href: `#${id}`,
+            className: ["heading-anchor"],
+            "aria-label": `${text} 링크`,
+          },
+          children: [
+            {
+              type: "text",
+              value: "#",
+            },
+          ],
+        },
+      ];
+
+      toc.push({
+        id,
+        text,
+        level,
+      });
+    });
+  };
 }
 
 const { post } = Astro.props;
@@ -60,6 +136,8 @@ if (segments.length === 0 && rawBody.trim()) {
   segments.push({ type: "markdown", content: rawBody });
 }
 
+const toc: TocItem[] = [];
+
 async function renderMarkdownSegment(content: string) {
   const file = await unified()
     .use(remarkParse)
@@ -71,6 +149,7 @@ async function renderMarkdownSegment(content: string) {
         packages: { "[+]": ["mhchem"] },
       },
     })
+    .use(createHeadingPlugin(toc))
     .use(rehypeStringify)
     .process(content);
 
@@ -117,6 +196,19 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
         <dd>{post.data.featured ? "예" : "아니오"}</dd>
       </div>
     </dl>
+
+    {toc.length > 0 && (
+      <nav class="toc-card" aria-label="게시물 목차">
+        <p class="toc-card__eyebrow">목차</p>
+        <ol class="toc-list">
+          {toc.map((item) => (
+            <li class={`toc-list__item toc-list__item--level-${item.level}`}>
+              <a href={`#${item.id}`}>{item.text}</a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    )}
 
     <div class="tag-list">
       {post.data.tags.map((tag: string) => (
@@ -213,6 +305,38 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
     color: #2e3c49;
   }
 
+  .toc-card {
+    margin-top: 1.4rem;
+    padding: 1.1rem 1.2rem;
+    border: 1px solid #e4ebf2;
+    border-radius: 16px;
+    background: #fbfdff;
+  }
+
+  .toc-card__eyebrow {
+    margin: 0 0 0.7rem;
+    color: #51719a;
+    font-size: 0.88rem;
+    font-weight: 700;
+  }
+
+  .toc-list {
+    margin: 0;
+    padding-left: 1.2rem;
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .toc-list__item a {
+    color: #285ea8;
+    text-decoration: none;
+  }
+
+  .toc-list__item--level-3 {
+    margin-left: 0.85rem;
+    font-size: 0.95rem;
+  }
+
   .tag-list {
     display: flex;
     flex-wrap: wrap;
@@ -240,6 +364,40 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
     color: #2e3c49;
     font-size: 1rem;
     line-height: 1.8;
+  }
+
+  .article-body :global(h2),
+  .article-body :global(h3) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    scroll-margin-top: 1.2rem;
+  }
+
+  .article-body :global(h2) {
+    margin: 2rem 0 0.9rem;
+    font-size: 1.55rem;
+    line-height: 1.25;
+  }
+
+  .article-body :global(h3) {
+    margin: 1.6rem 0 0.75rem;
+    font-size: 1.2rem;
+    line-height: 1.3;
+  }
+
+  .article-body :global(.heading-anchor) {
+    color: #9ab0c7;
+    font-size: 0.9em;
+    font-weight: 700;
+    text-decoration: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .article-body :global(h2:hover .heading-anchor),
+  .article-body :global(h3:hover .heading-anchor) {
+    opacity: 1;
   }
 
   .article-body :global(img) {
@@ -371,6 +529,10 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
 
     .meta-grid {
       grid-template-columns: 1fr;
+    }
+
+    .toc-card {
+      padding: 1rem;
     }
   }
 </style>
