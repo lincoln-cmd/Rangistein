@@ -122,6 +122,29 @@ const nextCategoryName = nextPost
   ? (getCategoryBySlug(nextPost.data.categorySlug)?.name ?? nextPost.data.categorySlug)
   : null;
 
+const currentTags = new Set(post.data.tags);
+
+const relatedPosts = allPosts
+  .filter((item) => item.id !== post.id)
+  .map((item) => {
+    const sharedTags = item.data.tags.filter((tag: string) => currentTags.has(tag)).length;
+    const sameCategory = item.data.categorySlug === post.data.categorySlug ? 1 : 0;
+    const score = sharedTags * 10 + sameCategory * 3;
+
+    return {
+      post: item,
+      score,
+      sharedTags,
+      sameCategory,
+    };
+  })
+  .filter((item) => item.score > 0)
+  .sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return String(b.post.data.publishedAt).localeCompare(String(a.post.data.publishedAt));
+  })
+  .slice(0, 3);
+
 const pageTitle = `${post.data.title} | 랑이슈타인`;
 const pageDescription = post.data.description;
 
@@ -261,6 +284,32 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
             </li>
           ))}
         </ul>
+      </section>
+    )}
+
+    {relatedPosts.length > 0 && (
+      <section class="related-posts" aria-label="관련 글">
+        <div class="related-posts__header">
+          <p class="related-posts__eyebrow">추천</p>
+          <h2 class="related-posts__title">관련 글</h2>
+        </div>
+
+        <div class="related-posts__grid">
+          {relatedPosts.map(({ post: related }) => {
+            const relatedCategoryName =
+              getCategoryBySlug(related.data.categorySlug)?.name ?? related.data.categorySlug;
+
+            return (
+              <a href={`/posts/${related.id}/`} class="related-posts__card">
+                <p class="related-posts__meta">
+                  {relatedCategoryName} · {related.data.publishedAt}
+                </p>
+                <h3 class="related-posts__card-title">{related.data.title}</h3>
+                <p class="related-posts__description">{related.data.description}</p>
+              </a>
+            );
+          })}
+        </div>
       </section>
     )}
 
@@ -559,6 +608,73 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
     color: #285ea8;
   }
 
+  .related-posts {
+    margin-top: 1.75rem;
+    padding: 1.2rem;
+    border: 1px solid #e4ebf2;
+    border-radius: 18px;
+    background: #fbfdff;
+  }
+
+  .related-posts__header {
+    margin-bottom: 0.9rem;
+  }
+
+  .related-posts__eyebrow {
+    margin: 0 0 0.35rem;
+    color: #51719a;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  .related-posts__title {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+
+  .related-posts__grid {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .related-posts__card {
+    display: block;
+    padding: 1rem 1.05rem;
+    border: 1px solid #e4ebf2;
+    border-radius: 16px;
+    background: #ffffff;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .related-posts__card:hover {
+    transform: translateY(-2px);
+    border-color: #bfd3ea;
+    box-shadow: 0 10px 24px rgba(24, 62, 105, 0.08);
+  }
+
+  .related-posts__meta {
+    margin: 0 0 0.35rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #51719a;
+  }
+
+  .related-posts__card-title {
+    margin: 0 0 0.45rem;
+    font-size: 1.02rem;
+    line-height: 1.35;
+  }
+
+  .related-posts__description {
+    margin: 0;
+    color: #58697a;
+    font-size: 0.94rem;
+    line-height: 1.65;
+  }
+
   .post-pagination {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -637,7 +753,8 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
       grid-template-columns: 1fr;
     }
 
-    .toc-card {
+    .toc-card,
+    .related-posts {
       padding: 1rem;
     }
 
