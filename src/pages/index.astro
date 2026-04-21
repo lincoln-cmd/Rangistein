@@ -2,7 +2,12 @@
 import { getCollection } from "astro:content";
 import SiteLayout from "../layouts/SiteLayout.astro";
 import SearchClient from "../components/SearchClient.astro";
-import { getCategoryBySlug, siteDescription, siteTitle } from "../data/site";
+import {
+  categories,
+  getCategoryBySlug,
+  siteDescription,
+  siteTitle,
+} from "../data/site";
 
 const allPosts = await getCollection("posts", ({ data }) => !data.draft);
 
@@ -16,9 +21,33 @@ const sortedPosts = [...allPosts].sort((a, b) => {
 
 const recentPosts = sortedPosts.filter((post) => post.data.type === "latest");
 const studyNotes = sortedPosts.filter((post) => post.data.type === "study");
+const featuredPosts = sortedPosts.filter((post) => post.data.featured);
+
+const heroFeaturedPost = featuredPosts[0] ?? sortedPosts[0] ?? null;
+const recommendedPosts = sortedPosts
+  .filter((post) => post.id !== heroFeaturedPost?.id)
+  .slice(0, 3);
+
+const latestHighlights = recentPosts.slice(0, 4);
+const studyHighlights = studyNotes.slice(0, 4);
+
 const featuredTags = Array.from(
   new Set(sortedPosts.flatMap((post) => post.data.tags)),
-).slice(0, 6);
+).slice(0, 8);
+
+const categoryHighlights = categories
+  .map((category) => {
+    const posts = sortedPosts.filter((post) => post.data.categorySlug === category.slug);
+
+    return {
+      ...category,
+      count: posts.length,
+      latestPost: posts[0] ?? null,
+    };
+  })
+  .filter((category) => category.count > 0)
+  .sort((a, b) => b.count - a.count)
+  .slice(0, 6);
 
 const searchItems = sortedPosts.map((post) => ({
   id: post.id,
@@ -32,8 +61,7 @@ const searchItems = sortedPosts.map((post) => ({
   featured: post.data.featured,
 }));
 
-const getCategoryName = (slug: string) =>
-  getCategoryBySlug(slug)?.name ?? slug;
+const getCategoryName = (slug: string) => getCategoryBySlug(slug)?.name ?? slug;
 ---
 
 <SiteLayout title={siteTitle} description={siteDescription} currentPath="/">
@@ -45,6 +73,21 @@ const getCategoryName = (slug: string) =>
         수학, 물리, 화학, 생명과학, 지구과학, 천문학을 중심으로
         과학 이론, 최신 동향, 논문 요약, 개인 학습 기록을 정리하는 웹 페이지입니다.
       </p>
+
+      <div class="hero__stats">
+        <div class="hero__stat">
+          <span class="hero__stat-label">전체 게시물</span>
+          <strong>{sortedPosts.length}</strong>
+        </div>
+        <div class="hero__stat">
+          <span class="hero__stat-label">최신 동향</span>
+          <strong>{recentPosts.length}</strong>
+        </div>
+        <div class="hero__stat">
+          <span class="hero__stat-label">공부 노트</span>
+          <strong>{studyNotes.length}</strong>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -66,15 +109,64 @@ const getCategoryName = (slug: string) =>
     </p>
   </section>
 
+  {heroFeaturedPost && (
+    <section class="section-card featured-section">
+      <div class="section-header">
+        <div>
+          <p class="section-eyebrow">추천</p>
+          <h2 class="section-title">대표 글</h2>
+        </div>
+        <a href={`/posts/${heroFeaturedPost.id}/`} class="section-link">바로 읽기</a>
+      </div>
+
+      <div class="featured-layout">
+        <a href={`/posts/${heroFeaturedPost.id}/`} class="featured-main-card">
+          <p class="featured-main-card__meta">
+            {getCategoryName(heroFeaturedPost.data.categorySlug)} · {heroFeaturedPost.data.publishedAt}
+            {heroFeaturedPost.data.featured ? " · 대표 글" : ""}
+          </p>
+          <h3 class="featured-main-card__title">{heroFeaturedPost.data.title}</h3>
+          <p class="featured-main-card__description">{heroFeaturedPost.data.description}</p>
+
+          <div class="featured-main-card__tags">
+            {heroFeaturedPost.data.tags.slice(0, 4).map((tag) => (
+              <span class="signal-chip">#{tag}</span>
+            ))}
+          </div>
+        </a>
+
+        <div class="card-list">
+          {recommendedPosts.map((post) => (
+            <a href={`/posts/${post.id}/`} class="post-card">
+              <p class="post-card__meta">
+                {getCategoryName(post.data.categorySlug)} · {post.data.publishedAt}
+                {post.data.featured ? " · 대표 글" : ""}
+              </p>
+              <h3 class="post-card__title">{post.data.title}</h3>
+              <p class="post-card__description">{post.data.description}</p>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
   <section class="content-grid">
     <article class="section-card">
       <div class="section-header">
-        <h2 class="section-title">최신 연구 동향 · 논문</h2>
+        <div>
+          <p class="section-eyebrow">업데이트</p>
+          <h2 class="section-title">최신 연구 동향 · 논문</h2>
+        </div>
         <a href="/categories/" class="section-link">전체 보기</a>
       </div>
 
+      <p class="section-subtext">
+        최근 정리한 최신 동향, 논문 요약, 이론 기반 해설 글입니다.
+      </p>
+
       <div class="card-list">
-        {recentPosts.map((post) => (
+        {latestHighlights.map((post) => (
           <a href={`/posts/${post.id}/`} class="post-card">
             <p class="post-card__meta">
               {getCategoryName(post.data.categorySlug)} · {post.data.publishedAt}
@@ -89,12 +181,19 @@ const getCategoryName = (slug: string) =>
 
     <article class="section-card">
       <div class="section-header">
-        <h2 class="section-title">개인 공부 게시물</h2>
+        <div>
+          <p class="section-eyebrow">학습 기록</p>
+          <h2 class="section-title">개인 공부 게시물</h2>
+        </div>
         <a href="/categories/study-notes/" class="section-link">전체 보기</a>
       </div>
 
+      <p class="section-subtext">
+        기초 개념 정리, 복습용 노트, 학습 중간 기록을 모아 둔 섹션입니다.
+      </p>
+
       <div class="card-list">
-        {studyNotes.map((post) => (
+        {studyHighlights.map((post) => (
           <a href={`/posts/${post.id}/`} class="post-card">
             <p class="post-card__meta">
               {getCategoryName(post.data.categorySlug)} · {post.data.publishedAt}
@@ -106,6 +205,32 @@ const getCategoryName = (slug: string) =>
         ))}
       </div>
     </article>
+  </section>
+
+  <section class="section-card">
+    <div class="section-header">
+      <div>
+        <p class="section-eyebrow">탐색</p>
+        <h2 class="section-title">카테고리 바로가기</h2>
+      </div>
+      <a href="/categories/" class="section-link">카테고리 전체 보기</a>
+    </div>
+
+    <div class="category-grid">
+      {categoryHighlights.map((category) => (
+        <a href={`/categories/${category.slug}/`} class="category-card">
+          <p class="category-card__meta">게시물 {category.count}개</p>
+          <h3 class="category-card__title">{category.name}</h3>
+          <p class="category-card__description">{category.description}</p>
+
+          {category.latestPost && (
+            <p class="category-card__latest">
+              최신 글: {category.latestPost.data.title}
+            </p>
+          )}
+        </a>
+      ))}
+    </div>
   </section>
 
   <section class="section-card">
@@ -153,7 +278,7 @@ const getCategoryName = (slug: string) =>
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    gap: 0.75rem;
+    gap: 0.9rem;
     min-height: 320px;
     padding: 2rem;
     color: #f7fbff;
@@ -180,6 +305,34 @@ const getCategoryName = (slug: string) =>
     color: #e6f0f8;
   }
 
+  .hero__stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    margin-top: 0.4rem;
+  }
+
+  .hero__stat {
+    min-width: 120px;
+    padding: 0.8rem 0.95rem;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(6px);
+  }
+
+  .hero__stat-label {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: #d9e8f5;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  .hero__stat strong {
+    font-size: 1.1rem;
+  }
+
   .content-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -196,7 +349,7 @@ const getCategoryName = (slug: string) =>
 
   .section-header {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 1rem;
     margin-bottom: 1rem;
@@ -206,6 +359,13 @@ const getCategoryName = (slug: string) =>
     display: flex;
     flex-wrap: wrap;
     gap: 0.75rem;
+  }
+
+  .section-eyebrow {
+    margin: 0 0 0.3rem;
+    color: #51719a;
+    font-size: 0.85rem;
+    font-weight: 700;
   }
 
   .section-title {
@@ -226,6 +386,74 @@ const getCategoryName = (slug: string) =>
     color: #4b5b6b;
   }
 
+  .section-subtext {
+    margin: 0 0 1rem;
+    color: #5d6d7d;
+    font-size: 0.95rem;
+  }
+
+  .featured-section {
+    overflow: hidden;
+  }
+
+  .featured-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
+    gap: 1rem;
+  }
+
+  .featured-main-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 280px;
+    padding: 1.4rem;
+    border-radius: 20px;
+    color: #f7fbff;
+    background:
+      linear-gradient(145deg, rgba(18, 42, 79, 0.94), rgba(24, 110, 128, 0.86)),
+      #17314d;
+    box-shadow: 0 14px 32px rgba(20, 44, 81, 0.16);
+  }
+
+  .featured-main-card__meta {
+    margin: 0 0 0.45rem;
+    color: #d4e7f8;
+    font-size: 0.84rem;
+    font-weight: 700;
+  }
+
+  .featured-main-card__title {
+    margin: 0 0 0.65rem;
+    font-size: clamp(1.35rem, 2vw, 2rem);
+    line-height: 1.2;
+    letter-spacing: -0.03em;
+  }
+
+  .featured-main-card__description {
+    margin: 0;
+    color: #ebf5fc;
+    line-height: 1.7;
+  }
+
+  .featured-main-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    margin-top: 1rem;
+  }
+
+  .signal-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.45rem 0.75rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    color: #f2f8fd;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
   .card-list {
     display: grid;
     gap: 1rem;
@@ -243,8 +471,14 @@ const getCategoryName = (slug: string) =>
       border-color 0.2s ease;
   }
 
-  .post-card:hover {
+  .post-card:hover,
+  .category-card:hover,
+  .featured-main-card:hover {
     transform: translateY(-2px);
+  }
+
+  .post-card:hover,
+  .category-card:hover {
     border-color: #bfd3ea;
     box-shadow: 0 10px 24px rgba(24, 62, 105, 0.08);
   }
@@ -266,6 +500,53 @@ const getCategoryName = (slug: string) =>
     margin: 0;
     color: #58697a;
     font-size: 0.95rem;
+    line-height: 1.65;
+  }
+
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .category-card {
+    display: block;
+    padding: 1rem 1.05rem;
+    border: 1px solid #e4ebf2;
+    border-radius: 16px;
+    background: #fbfdff;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .category-card__meta {
+    margin: 0 0 0.35rem;
+    color: #51719a;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  .category-card__title {
+    margin: 0 0 0.45rem;
+    font-size: 1rem;
+    line-height: 1.35;
+  }
+
+  .category-card__description {
+    margin: 0;
+    color: #58697a;
+    font-size: 0.93rem;
+    line-height: 1.65;
+  }
+
+  .category-card__latest {
+    margin: 0.8rem 0 0;
+    color: #35516e;
+    font-size: 0.88rem;
+    font-weight: 700;
+    line-height: 1.5;
   }
 
   .tag-list {
@@ -297,7 +578,9 @@ const getCategoryName = (slug: string) =>
   }
 
   @media (max-width: 1080px) {
-    .content-grid {
+    .content-grid,
+    .category-grid,
+    .featured-layout {
       grid-template-columns: 1fr;
     }
   }
@@ -309,6 +592,12 @@ const getCategoryName = (slug: string) =>
     }
 
     .section-card {
+      padding: 1.1rem;
+      border-radius: 16px;
+    }
+
+    .featured-main-card {
+      min-height: 220px;
       padding: 1.1rem;
       border-radius: 16px;
     }
@@ -332,11 +621,13 @@ const getCategoryName = (slug: string) =>
       font-size: 1.05rem;
     }
 
-    .post-card__title {
+    .post-card__title,
+    .category-card__title {
       font-size: 0.98rem;
     }
 
-    .post-card__description {
+    .post-card__description,
+    .category-card__description {
       font-size: 0.9rem;
     }
   }
