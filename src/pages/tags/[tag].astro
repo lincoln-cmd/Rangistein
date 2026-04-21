@@ -1,6 +1,8 @@
 ---
 import { getCollection } from "astro:content";
 import SiteLayout from "../../layouts/SiteLayout.astro";
+import { getCategoryBySlug } from "../../data/site";
+import { getRelatedTags } from "../../utils/tag-utils";
 
 export async function getStaticPaths() {
   const posts = await getCollection("posts", ({ data }) => !data.draft);
@@ -19,14 +21,20 @@ export async function getStaticPaths() {
     params: { tag },
     props: {
       tag,
-      posts: taggedPosts.sort((a, b) =>
-        b.data.publishedAt.localeCompare(a.data.publishedAt),
-      ),
+      posts: [...taggedPosts].sort((a, b) => {
+        if (a.data.featured !== b.data.featured) {
+          return a.data.featured ? -1 : 1;
+        }
+
+        return String(b.data.publishedAt).localeCompare(String(a.data.publishedAt));
+      }),
     },
   }));
 }
 
 const { tag, posts } = Astro.props;
+const relatedTags = getRelatedTags(tag, posts, 8);
+const featuredCount = posts.filter((post: any) => post.data.featured).length;
 ---
 
 <SiteLayout title={`${tag} | 태그 | 랑이슈타인`} currentPath="/tags/">
@@ -35,20 +43,59 @@ const { tag, posts } = Astro.props;
     <h1 class="page-title">#{tag}</h1>
     <p class="page-description">
       이 태그가 포함된 게시물은 총 {posts.length}개입니다.
+      {featuredCount > 0 ? ` 대표 글 ${featuredCount}개가 포함되어 있습니다.` : ""}
     </p>
   </section>
 
-  <section class="post-list">
-    {posts.map((post: any) => (
-      <a href={`/posts/${post.id}/`} class="post-card">
-        <p class="post-card__meta">
-          {post.data.category} · {post.data.publishedAt}
-          {post.data.featured ? " · 대표 글" : ""}
+  {relatedTags.length > 0 && (
+    <section class="section-card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">추천</p>
+          <h2 class="section-title">함께 자주 쓰인 태그</h2>
+        </div>
+        <p class="section-description">
+          현재 태그와 같은 게시물 안에서 함께 등장한 태그입니다.
         </p>
-        <h2 class="post-card__title">{post.data.title}</h2>
-        <p class="post-card__description">{post.data.description}</p>
-      </a>
-    ))}
+      </div>
+
+      <div class="tag-wrap">
+        {relatedTags.map((item) => (
+          <a href={`/tags/${encodeURIComponent(item.tag)}/`} class="tag-chip">
+            <span>#{item.tag}</span>
+            <span class="tag-chip__count">{item.count}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <section class="post-list">
+    {posts.map((post: any) => {
+      const categoryName =
+        getCategoryBySlug(post.data.categorySlug)?.name ?? post.data.categorySlug;
+
+      const otherTags = post.data.tags.filter((item: string) => item !== tag).slice(0, 3);
+
+      return (
+        <a href={`/posts/${post.id}/`} class="post-card">
+          <p class="post-card__meta">
+            {categoryName} · {post.data.publishedAt}
+            {post.data.featured ? " · 대표 글" : ""}
+          </p>
+          <h2 class="post-card__title">{post.data.title}</h2>
+          <p class="post-card__description">{post.data.description}</p>
+
+          {otherTags.length > 0 && (
+            <div class="post-card__tags">
+              {otherTags.map((item: string) => (
+                <span class="post-card__tag">#{item}</span>
+              ))}
+            </div>
+          )}
+        </a>
+      );
+    })}
   </section>
 
   <section class="section-card section-card--compact">
@@ -69,6 +116,14 @@ const { tag, posts } = Astro.props;
     padding: 1rem 1.25rem;
   }
 
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
   .eyebrow {
     margin: 0 0 0.4rem;
     color: #51719a;
@@ -82,9 +137,55 @@ const { tag, posts } = Astro.props;
     line-height: 1.15;
   }
 
-  .page-description {
+  .page-description,
+  .section-description {
     margin: 0;
     color: #58697a;
+  }
+
+  .section-title {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .tag-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .tag-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    padding: 0.7rem 1rem;
+    border-radius: 999px;
+    background: #eef5fc;
+    color: #244f84;
+    font-size: 0.94rem;
+    font-weight: 700;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .tag-chip:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(24, 62, 105, 0.1);
+    background: #e4f0fb;
+  }
+
+  .tag-chip__count {
+    display: inline-flex;
+    min-width: 1.5rem;
+    justify-content: center;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    background: rgba(36, 79, 132, 0.12);
+    font-size: 0.82rem;
   }
 
   .post-list {
@@ -121,15 +222,53 @@ const { tag, posts } = Astro.props;
   .post-card__title {
     margin: 0 0 0.45rem;
     font-size: 1.15rem;
+    line-height: 1.35;
   }
 
   .post-card__description {
     margin: 0;
     color: #58697a;
+    line-height: 1.65;
+  }
+
+  .post-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+  }
+
+  .post-card__tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.42rem 0.72rem;
+    border-radius: 999px;
+    background: #eef4fb;
+    color: #35516e;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
   }
 
   .back-link {
     color: #285ea8;
     font-weight: 700;
+  }
+
+  @media (max-width: 640px) {
+    .section-card {
+      padding: 1.1rem;
+      border-radius: 16px;
+    }
+
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .post-card {
+      padding: 1rem 1.05rem;
+      border-radius: 16px;
+    }
   }
 </style>

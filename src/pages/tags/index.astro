@@ -1,17 +1,13 @@
 ---
 import { getCollection } from "astro:content";
 import SiteLayout from "../../layouts/SiteLayout.astro";
+import { buildTagSummaries } from "../../utils/tag-utils";
 
 const posts = await getCollection("posts", ({ data }) => !data.draft);
+const tagSummaries = buildTagSummaries(posts);
 
-const tagCounts = Array.from(
-  posts.flatMap((post) => post.data.tags),
-).reduce<Record<string, number>>((acc, tag) => {
-  acc[tag] = (acc[tag] ?? 0) + 1;
-  return acc;
-}, {});
-
-const tags = Object.entries(tagCounts).sort((a, b) => a[0].localeCompare(b[0], "ko"));
+const featuredTags = tagSummaries.slice(0, 6);
+const allTags = [...tagSummaries].sort((a, b) => a.tag.localeCompare(b.tag, "ko"));
 ---
 
 <SiteLayout title="태그 | 랑이슈타인" currentPath="/tags/">
@@ -19,17 +15,54 @@ const tags = Object.entries(tagCounts).sort((a, b) => a[0].localeCompare(b[0], "
     <p class="eyebrow">Tag Index</p>
     <h1 class="page-title">태그</h1>
     <p class="page-description">
-      현재 등록된 게시물 태그 목록입니다. 태그를 클릭하면 관련 게시물만 모아볼 수 있습니다.
+      현재 등록된 게시물 태그 목록입니다. 자주 쓰인 태그와 전체 태그를 함께 탐색할 수 있습니다.
     </p>
   </section>
 
-  <section class="tag-wrap section-card">
-    {tags.map(([tag, count]) => (
-      <a href={`/tags/${encodeURIComponent(tag)}/`} class="tag-chip">
-        <span>#{tag}</span>
-        <span class="tag-chip__count">{count}</span>
-      </a>
-    ))}
+  {featuredTags.length > 0 && (
+    <section class="section-card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">추천</p>
+          <h2 class="section-title">대표 태그</h2>
+        </div>
+        <p class="section-description">
+          게시물 수, 대표 글 포함 여부, 최신 사용 시점을 기준으로 우선 정렬했습니다.
+        </p>
+      </div>
+
+      <div class="featured-tag-grid">
+        {featuredTags.map((item) => (
+          <a href={`/tags/${encodeURIComponent(item.tag)}/`} class="featured-tag-card">
+            <p class="featured-tag-card__meta">
+              게시물 {item.count}개
+              {item.featuredCount > 0 ? ` · 대표 글 ${item.featuredCount}개` : ""}
+            </p>
+            <h3 class="featured-tag-card__title">#{item.tag}</h3>
+            <p class="featured-tag-card__date">최근 사용: {item.latestPublishedAt}</p>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <section class="section-card">
+    <div class="section-header">
+      <div>
+        <p class="eyebrow">전체 목록</p>
+        <h2 class="section-title">모든 태그</h2>
+      </div>
+      <p class="section-description">가나다순으로 정렬된 전체 태그 목록입니다.</p>
+    </div>
+
+    <div class="tag-wrap">
+      {allTags.map((item) => (
+        <a href={`/tags/${encodeURIComponent(item.tag)}/`} class="tag-chip">
+          <span>#{item.tag}</span>
+          <span class="tag-chip__count">{item.count}</span>
+        </a>
+      ))}
+    </div>
   </section>
 </SiteLayout>
 
@@ -40,6 +73,14 @@ const tags = Object.entries(tagCounts).sort((a, b) => a[0].localeCompare(b[0], "
     border-radius: 20px;
     background: #ffffff;
     box-shadow: 0 10px 30px rgba(19, 36, 59, 0.06);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
   }
 
   .eyebrow {
@@ -55,9 +96,60 @@ const tags = Object.entries(tagCounts).sort((a, b) => a[0].localeCompare(b[0], "
     line-height: 1.15;
   }
 
-  .page-description {
+  .page-description,
+  .section-description {
     margin: 0;
     color: #58697a;
+  }
+
+  .section-title {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .featured-tag-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .featured-tag-card {
+    display: block;
+    padding: 1.1rem;
+    border: 1px solid #dde5ed;
+    border-radius: 18px;
+    background: #fbfdff;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .featured-tag-card:hover {
+    transform: translateY(-2px);
+    border-color: #bfd3ea;
+    box-shadow: 0 12px 28px rgba(24, 62, 105, 0.08);
+  }
+
+  .featured-tag-card__meta {
+    margin: 0 0 0.35rem;
+    color: #51719a;
+    font-size: 0.84rem;
+    font-weight: 700;
+  }
+
+  .featured-tag-card__title {
+    margin: 0 0 0.45rem;
+    font-size: 1.1rem;
+    line-height: 1.35;
+  }
+
+  .featured-tag-card__date {
+    margin: 0;
+    color: #58697a;
+    font-size: 0.92rem;
   }
 
   .tag-wrap {
@@ -96,5 +188,27 @@ const tags = Object.entries(tagCounts).sort((a, b) => a[0].localeCompare(b[0], "
     border-radius: 999px;
     background: rgba(36, 79, 132, 0.12);
     font-size: 0.82rem;
+  }
+
+  @media (max-width: 960px) {
+    .featured-tag-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 640px) {
+    .section-card {
+      padding: 1.1rem;
+      border-radius: 16px;
+    }
+
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .featured-tag-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
