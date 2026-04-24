@@ -19,6 +19,18 @@ const {
   emptyMessage = "검색 결과가 없습니다.",
   limit = 50,
 } = Astro.props;
+
+const categoryOptions = Array.from(
+  new Map(
+    (items as SearchItem[]).map((item) => [
+      item.categorySlug,
+      {
+        slug: item.categorySlug,
+        name: item.categoryName,
+      },
+    ]),
+  ).values(),
+).sort((a, b) => a.name.localeCompare(b.name, "ko"));
 ---
 
 <section class="search-block section-card">
@@ -36,15 +48,27 @@ const {
     data-search-limit={String(limit)}
     data-empty-message={emptyMessage}
   >
-    <label class="search-input-wrap">
-      <span class="search-input-wrap__label">검색어</span>
-      <input
-        type="search"
-        class="search-input"
-        placeholder={placeholder}
-        autocomplete="off"
-      />
-    </label>
+    <div class="search-controls">
+      <label class="search-input-wrap">
+        <span class="search-input-wrap__label">검색어</span>
+        <input
+          type="search"
+          class="search-input"
+          placeholder={placeholder}
+          autocomplete="off"
+        />
+      </label>
+
+      <label class="search-filter-wrap">
+        <span class="search-input-wrap__label">카테고리 필터</span>
+        <select class="search-select">
+          <option value="">전체 카테고리</option>
+          {categoryOptions.map((category) => (
+            <option value={category.slug}>{category.name}</option>
+          ))}
+        </select>
+      </label>
+    </div>
 
     <p class="search-summary">
       검색어를 입력하면 결과가 표시됩니다.
@@ -70,31 +94,78 @@ const {
     const limit = Number(rawLimit || "50");
 
     const input = root.querySelector(".search-input");
+    const select = root.querySelector(".search-select");
     const summary = root.querySelector(".search-summary");
     const results = root.querySelector(".search-results");
 
     if (!(input instanceof HTMLInputElement)) return;
+    if (!(select instanceof HTMLSelectElement)) return;
     if (!(summary instanceof HTMLElement)) return;
     if (!(results instanceof HTMLElement)) return;
 
     const normalize = (value) => String(value ?? "").toLowerCase().trim();
 
-    const buildCard = (item) => {
+    const escapeHtml = (value) =>
+      String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+
+    const escapeRegExp = (value) =>
+      String(value ?? "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    const getTypeLabel = (type) => {
+      if (type === "study") return "공부 노트";
+      if (type === "latest") return "최신 동향";
+      return type || "기타";
+    };
+
+    const highlightText = (text, query) => {
+      const safeText = escapeHtml(text);
+
+      if (!query) return safeText;
+
+      const escapedQuery = escapeRegExp(query.trim());
+
+      if (!escapedQuery) return safeText;
+
+      const regex = new RegExp(`(${escapedQuery})`, "gi");
+      return safeText.replace(regex, '<mark class="search-highlight">$1</mark>');
+    };
+
+    const buildCard = (item, query) => {
       const anchor = document.createElement("a");
       anchor.href = `/posts/${item.id}/`;
       anchor.className = "post-card";
 
       const meta = document.createElement("p");
       meta.className = "post-card__meta";
-      meta.textContent = `${item.categoryName} · ${item.publishedAt}${item.featured ? " · 대표 글" : ""}`;
+      meta.textContent = `${item.categoryName} · ${item.publishedAt}`;
 
       const title = document.createElement("h3");
       title.className = "post-card__title";
-      title.textContent = item.title;
+      title.innerHTML = highlightText(item.title, query);
 
       const description = document.createElement("p");
       description.className = "post-card__description";
-      description.textContent = item.description;
+      description.innerHTML = highlightText(item.description, query);
+
+      const badgeWrap = document.createElement("div");
+      badgeWrap.className = "post-card__badges";
+
+      const typeBadge = document.createElement("span");
+      typeBadge.className = "post-card__badge";
+      typeBadge.textContent = getTypeLabel(item.type);
+      badgeWrap.appendChild(typeBadge);
+
+      if (item.featured) {
+        const featuredBadge = document.createElement("span");
+        featuredBadge.className = "post-card__badge post-card__badge--accent";
+        featuredBadge.textContent = "대표 글";
+        badgeWrap.appendChild(featuredBadge);
+      }
 
       const tagWrap = document.createElement("div");
       tagWrap.className = "post-card__tags";
@@ -102,28 +173,50 @@ const {
       (item.tags || []).forEach((tag) => {
         const span = document.createElement("span");
         span.className = "post-card__tag";
-        span.textContent = `#${tag}`;
+        span.innerHTML = `#${highlightText(tag, query)}`;
         tagWrap.appendChild(span);
       });
 
-      anchor.append(meta, title, description, tagWrap);
+      const categoryHint = document.createElement("p");
+      categoryHint.className = "post-card__category-hint";
+      categoryHint.innerHTML = `카테고리: ${highlightText(item.categoryName, query)}`;
+
+      anchor.append(meta, title, description, badgeWrap, categoryHint, tagWrap);
       return anchor;
     };
 
     const buildEmpty = () => {
       const div = document.createElement("div");
       div.className = "search-empty";
-      div.textContent = emptyMessage;
+      div.innerHTML = `
+        <strong>검색 결과가 없습니다.</strong>
+        <p>${escapeHtml(emptyMessage)}</p>
+      `;
       return div;
     };
 
-    const render = (query) => {
-      const normalizedQuery = normalize(query);
+    const buildInitial = () => {
+      const div = document.createElement("div");
+      div.className = "search-empty";
+      div.innerHTML = `
+        <strong>검색 대기 중</strong>
+        <p>검색어를 입력하거나 카테고리를 선택하면 결과가 표시됩니다.</p>
+      `;
+      return div;
+    };
 
-      if (!normalizedQuery) {
-        summary.textContent = "검색어를 입력하면 결과가 표시됩니다.";
+    const render = () => {
+      const query = input.value;
+      const selectedCategory = select.value;
+      const normalizedQuery = normalize(query);
+      const hasQuery = Boolean(normalizedQuery);
+      const hasCategoryFilter = Boolean(selectedCategory);
+
+      if (!hasQuery && !hasCategoryFilter) {
+        summary.textContent = "검색어를 입력하거나 카테고리를 선택하면 결과가 표시됩니다.";
         results.innerHTML = "";
-        results.hidden = true;
+        results.hidden = false;
+        results.appendChild(buildInitial());
         return;
       }
 
@@ -137,12 +230,35 @@ const {
             ...(item.tags || []),
           ].join(" "),
         );
-        return haystack.includes(normalizedQuery);
+
+        const matchesQuery = hasQuery ? haystack.includes(normalizedQuery) : true;
+        const matchesCategory = hasCategoryFilter
+          ? item.categorySlug === selectedCategory
+          : true;
+
+        return matchesQuery && matchesCategory;
       });
 
       const visibleItems = filtered.slice(0, limit);
+      const parts = [];
 
-      summary.innerHTML = `검색 결과 <strong>${filtered.length}</strong>개`;
+      if (hasQuery) {
+        parts.push(`검색어 <strong>${escapeHtml(query.trim())}</strong>`);
+      }
+
+      if (hasCategoryFilter) {
+        const selectedOption = select.options[select.selectedIndex];
+        const label = selectedOption ? selectedOption.text : selectedCategory;
+        parts.push(`카테고리 <strong>${escapeHtml(label)}</strong>`);
+      }
+
+      const conditionText = parts.length > 0 ? `${parts.join(" · ")} 기준으로 ` : "";
+      const visibleSuffix =
+        filtered.length > visibleItems.length
+          ? ` · 상위 <strong>${visibleItems.length}</strong>개 표시`
+          : "";
+
+      summary.innerHTML = `${conditionText}검색 결과 <strong>${filtered.length}</strong>개${visibleSuffix}`;
       results.innerHTML = "";
       results.hidden = false;
 
@@ -152,13 +268,14 @@ const {
       }
 
       visibleItems.forEach((item) => {
-        results.appendChild(buildCard(item));
+        results.appendChild(buildCard(item, query));
       });
     };
 
-    input.addEventListener("input", () => {
-      render(input.value);
-    });
+    input.addEventListener("input", render);
+    select.addEventListener("change", render);
+
+    render();
   });
 </script>
 
@@ -200,7 +317,14 @@ const {
     gap: 1rem;
   }
 
-  .search-input-wrap {
+  .search-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(220px, 0.7fr);
+    gap: 0.9rem;
+  }
+
+  .search-input-wrap,
+  .search-filter-wrap {
     display: grid;
     gap: 0.45rem;
   }
@@ -211,7 +335,8 @@ const {
     font-weight: 700;
   }
 
-  .search-input {
+  .search-input,
+  .search-select {
     width: 100%;
     padding: 0.9rem 1rem;
     border: 1px solid #d5e0ea;
@@ -220,7 +345,8 @@ const {
     font: inherit;
   }
 
-  .search-input:focus {
+  .search-input:focus,
+  .search-select:focus {
     outline: 2px solid rgba(40, 94, 168, 0.18);
     border-color: #8fb4de;
   }
@@ -275,6 +401,37 @@ const {
     margin: 0;
     color: #58697a;
     font-size: 0.95rem;
+    line-height: 1.65;
+  }
+
+  :global(.search-results .post-card__badges) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+  }
+
+  :global(.search-results .post-card__badge) {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.42rem 0.72rem;
+    border-radius: 999px;
+    background: #eef4fb;
+    color: #35516e;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  :global(.search-results .post-card__badge--accent) {
+    background: #dff1ff;
+    color: #1f5f8b;
+  }
+
+  :global(.search-results .post-card__category-hint) {
+    margin: 0.8rem 0 0;
+    color: #5d6d7d;
+    font-size: 0.9rem;
   }
 
   :global(.search-results .post-card__tags) {
@@ -299,10 +456,33 @@ const {
     color: #58697a;
   }
 
+  :global(.search-results .search-empty strong) {
+    display: block;
+    margin-bottom: 0.35rem;
+    color: #2e3c49;
+  }
+
+  :global(.search-results .search-empty p) {
+    margin: 0;
+    line-height: 1.65;
+  }
+
+  :global(.search-results .search-highlight) {
+    padding: 0 0.18em;
+    border-radius: 0.28em;
+    background: #fff2a8;
+    color: inherit;
+    font-weight: 800;
+  }
+
   @media (max-width: 820px) {
     .section-card {
       padding: 1.1rem;
       border-radius: 16px;
+    }
+
+    .search-controls {
+      grid-template-columns: 1fr;
     }
   }
 </style>
