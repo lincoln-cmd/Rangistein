@@ -7,16 +7,40 @@ export interface Props {
   title?: string;
   description?: string;
   currentPath?: string;
+  image?: string;
+  noIndex?: boolean;
+  ogType?: "website" | "article";
+  publishedTime?: string;
+  modifiedTime?: string;
+  tags?: string[];
+  structuredData?: Record<string, unknown> | Record<string, unknown>[];
 }
 
 const {
   title = siteTitle,
   description = siteDescription,
   currentPath = "/",
+  image = "/favicon.png",
+  noIndex = false,
+  ogType = "website",
+  publishedTime,
+  modifiedTime,
+  tags = [],
+  structuredData,
 } = Astro.props;
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout
+  title={title}
+  description={description}
+  image={image}
+  noIndex={noIndex}
+  ogType={ogType}
+  publishedTime={publishedTime}
+  modifiedTime={modifiedTime}
+  tags={tags}
+  structuredData={structuredData}
+>
   <main class="page-shell">
     <Sidebar currentPath={currentPath} />
     <div class="content-area">

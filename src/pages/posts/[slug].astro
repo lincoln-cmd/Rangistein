@@ -128,6 +128,31 @@ const relatedPosts = getRelatedPosts(post, allPosts, 3);
 const pageTitle = `${post.data.title} | 랑이슈타인`;
 const pageDescription = post.data.description;
 
+const siteUrl = Astro.site ?? new URL("https://rangistein.pages.dev");
+const postUrl = new URL(`/posts/${post.id}/`, siteUrl).toString();
+
+const postStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: post.data.title,
+  description: post.data.description,
+  url: postUrl,
+  datePublished: String(post.data.publishedAt),
+  dateModified: String(post.data.updatedAt ?? post.data.publishedAt),
+  inLanguage: "ko-KR",
+  articleSection: categoryName,
+  keywords: post.data.tags.join(", "),
+  author: {
+    "@type": "Person",
+    name: "김동훈",
+  },
+  publisher: {
+    "@type": "Organization",
+    name: "랑이슈타인",
+  },
+};
+
+
 const rawBody = post.body ?? "";
 const markerRegex = /\{\{viz:([\w-]+)\}\}/g;
 
@@ -194,7 +219,15 @@ const renderedSegments = await Promise.all(
 const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
 ---
 
-<SiteLayout title={pageTitle} description={pageDescription}>
+<SiteLayout
+  title={pageTitle}
+  description={pageDescription}
+  ogType="article"
+  publishedTime={String(post.data.publishedAt)}
+  modifiedTime={String(post.data.updatedAt ?? post.data.publishedAt)}
+  tags={post.data.tags}
+  structuredData={postStructuredData}
+>
   <article class="article-card">
     <p class="eyebrow">{categoryName} · {post.data.publishedAt}</p>
     <h1 class="article-title">{post.data.title}</h1>
