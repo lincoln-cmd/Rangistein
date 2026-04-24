@@ -6,6 +6,11 @@ export interface Props {
   description?: string;
   image?: string;
   noIndex?: boolean;
+  ogType?: "website" | "article";
+  publishedTime?: string;
+  modifiedTime?: string;
+  tags?: string[];
+  structuredData?: Record<string, unknown> | Record<string, unknown>[];
 }
 
 const {
@@ -13,11 +18,27 @@ const {
   description = siteDescription,
   image = "/favicon.png",
   noIndex = false,
+  ogType = "website",
+  publishedTime,
+  modifiedTime,
+  tags = [],
+  structuredData,
 } = Astro.props;
 
 const siteUrl = Astro.site ?? new URL("https://rangistein.pages.dev");
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
 const ogImageUrl = new URL(image, siteUrl).toString();
+
+const defaultStructuredData = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: siteTitle,
+  description: siteDescription,
+  url: siteUrl.toString(),
+  inLanguage: "ko-KR",
+};
+
+const structuredDataPayload = structuredData ?? defaultStructuredData;
 ---
 
 <!DOCTYPE html>
@@ -33,7 +54,7 @@ const ogImageUrl = new URL(image, siteUrl).toString();
     <meta name="theme-color" content="#16304a" />
     <link rel="canonical" href={canonicalUrl} />
 
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:locale" content="ko_KR" />
     <meta property="og:site_name" content={siteTitle} />
     <meta property="og:title" content={title} />
@@ -41,10 +62,22 @@ const ogImageUrl = new URL(image, siteUrl).toString();
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:image" content={ogImageUrl} />
 
+    {ogType === "article" && publishedTime && (
+      <meta property="article:published_time" content={publishedTime} />
+    )}
+    {ogType === "article" && modifiedTime && (
+      <meta property="article:modified_time" content={modifiedTime} />
+    )}
+    {ogType === "article" && tags.map((tag) => (
+      <meta property="article:tag" content={tag} />
+    ))}
+
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImageUrl} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(structuredDataPayload)} />
 
     <title>{title}</title>
   </head>
