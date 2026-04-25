@@ -32,7 +32,7 @@ let ogImageUrl = new URL(image, siteUrl).toString();
 if (ogType === "article") {
   const slug = Astro.url.pathname.split("/").filter(Boolean).pop();
   if (slug) {
-    ogImageUrl = new URL(`/og/${slug}.png`, siteUrl).toString();
+    ogImageUrl = new URL(`/og/${slug}.svg`, siteUrl).toString();
   }
 }
 
