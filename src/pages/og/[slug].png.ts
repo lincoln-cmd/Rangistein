@@ -2,13 +2,21 @@ import { getCollection } from "astro:content";
 import satori from "satori";
 import { Resvg } from "@resvg/resvg-js";
 
-export async function GET({ params }) {
+export async function getStaticPaths() {
   const posts = await getCollection("posts", ({ data }) => !data.draft);
-  const post = posts.find((p) => p.id === params.slug);
 
-  if (!post) {
-    return new Response("Not found", { status: 404 });
-  }
+  return posts.map((post) => ({
+    params: {
+      slug: post.id,
+    },
+    props: {
+      post,
+    },
+  }));
+}
+
+export async function GET({ props }) {
+  const { post } = props;
 
   const title = post.data.title;
   const category = post.data.categorySlug;
@@ -25,8 +33,7 @@ export async function GET({ params }) {
           flexDirection: "column",
           justifyContent: "space-between",
           padding: "60px",
-          background:
-            "linear-gradient(135deg, #162d56 0%, #186e80 100%)",
+          background: "linear-gradient(135deg, #162d56 0%, #186e80 100%)",
           color: "white",
           fontFamily: "sans-serif",
         },
