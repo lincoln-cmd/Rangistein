@@ -27,7 +27,14 @@ const {
 
 const siteUrl = Astro.site ?? new URL("https://rangistein.pages.dev");
 const canonicalUrl = new URL(Astro.url.pathname, siteUrl).toString();
-const ogImageUrl = new URL(image, siteUrl).toString();
+let ogImageUrl = new URL(image, siteUrl).toString();
+
+if (ogType === "article") {
+  const slug = Astro.url.pathname.split("/").filter(Boolean).pop();
+  if (slug) {
+    ogImageUrl = new URL(`/og/${slug}.png`, siteUrl).toString();
+  }
+}
 
 const defaultStructuredData = {
   "@context": "https://schema.org",
