@@ -135,6 +135,48 @@ const categoryOptions = Array.from(
       return safeText.replace(regex, '<mark class="search-highlight">$1</mark>');
     };
 
+    const getSearchScore = (item, query) => {
+      const normalizedQuery = normalize(query);
+      if (!normalizedQuery) return 0;
+
+      const queryWords = normalizedQuery.split(/\s+/).filter(Boolean);
+
+      const title = normalize(item.title);
+      const description = normalize(item.description);
+      const categoryName = normalize(item.categoryName);
+      const categorySlug = normalize(item.categorySlug);
+      const tags = (item.tags || []).map((tag) => normalize(tag));
+
+      let score = 0;
+
+      if (title === normalizedQuery) score += 120;
+      if (title.includes(normalizedQuery)) score += 70;
+
+      for (const tag of tags) {
+        if (tag === normalizedQuery) score += 90;
+        else if (tag.includes(normalizedQuery)) score += 55;
+      }
+
+      if (categoryName.includes(normalizedQuery)) score += 35;
+      if (categorySlug.includes(normalizedQuery)) score += 25;
+      if (description.includes(normalizedQuery)) score += 20;
+
+      for (const word of queryWords) {
+        if (title.includes(word)) score += 20;
+        if (description.includes(word)) score += 6;
+        if (categoryName.includes(word)) score += 10;
+        if (categorySlug.includes(word)) score += 8;
+
+        for (const tag of tags) {
+          if (tag.includes(word)) score += 14;
+        }
+      }
+
+      if (item.featured) score += 3;
+
+      return score;
+    };
+
     const buildCard = (item, query) => {
       const anchor = document.createElement("a");
       anchor.href = `/posts/${item.id}/`;
@@ -167,6 +209,10 @@ const categoryOptions = Array.from(
         badgeWrap.appendChild(featuredBadge);
       }
 
+      const categoryHint = document.createElement("p");
+      categoryHint.className = "post-card__category-hint";
+      categoryHint.innerHTML = `카테고리: ${highlightText(item.categoryName, query)}`;
+
       const tagWrap = document.createElement("div");
       tagWrap.className = "post-card__tags";
 
@@ -176,10 +222,6 @@ const categoryOptions = Array.from(
         span.innerHTML = `#${highlightText(tag, query)}`;
         tagWrap.appendChild(span);
       });
-
-      const categoryHint = document.createElement("p");
-      categoryHint.className = "post-card__category-hint";
-      categoryHint.innerHTML = `카테고리: ${highlightText(item.categoryName, query)}`;
 
       anchor.append(meta, title, description, badgeWrap, categoryHint, tagWrap);
       return anchor;
@@ -220,24 +262,48 @@ const categoryOptions = Array.from(
         return;
       }
 
-      const filtered = items.filter((item) => {
-        const haystack = normalize(
-          [
-            item.title,
-            item.description,
-            item.categoryName,
-            item.categorySlug,
-            ...(item.tags || []),
-          ].join(" "),
-        );
+      const filtered = items
+        .map((item, index) => ({
+          item,
+          index,
+          score: getSearchScore(item, query),
+        }))
+        .filter(({ item, score }) => {
+          const haystack = normalize(
+            [
+              item.title,
+              item.description,
+              item.categoryName,
+              item.categorySlug,
+              ...(item.tags || []),
+            ].join(" "),
+          );
 
-        const matchesQuery = hasQuery ? haystack.includes(normalizedQuery) : true;
-        const matchesCategory = hasCategoryFilter
-          ? item.categorySlug === selectedCategory
-          : true;
+          const matchesQuery = hasQuery ? haystack.includes(normalizedQuery) : true;
+          const matchesCategory = hasCategoryFilter
+            ? item.categorySlug === selectedCategory
+            : true;
 
-        return matchesQuery && matchesCategory;
-      });
+          return matchesQuery && matchesCategory && (!hasQuery || score > 0);
+        })
+        .sort((a, b) => {
+          if (hasQuery && b.score !== a.score) {
+            return b.score - a.score;
+          }
+
+          if (Number(b.item.featured) !== Number(a.item.featured)) {
+            return Number(b.item.featured) - Number(a.item.featured);
+          }
+
+          const dateCompare = String(b.item.publishedAt).localeCompare(
+            String(a.item.publishedAt),
+          );
+
+          if (dateCompare !== 0) return dateCompare;
+
+          return a.index - b.index;
+        })
+        .map(({ item }) => item);
 
       const visibleItems = filtered.slice(0, limit);
       const parts = [];
