@@ -8,6 +8,7 @@ import {
   siteDescription,
   siteTitle,
 } from "../data/site";
+import { getHomeRecommendations } from "../utils/home-recommendations";
 
 const allPosts = await getCollection("posts", ({ data }) => !data.draft);
 
@@ -24,9 +25,11 @@ const studyNotes = sortedPosts.filter((post) => post.data.type === "study");
 const featuredPosts = sortedPosts.filter((post) => post.data.featured);
 
 const heroFeaturedPost = featuredPosts[0] ?? sortedPosts[0] ?? null;
-const recommendedPosts = sortedPosts
-  .filter((post) => post.id !== heroFeaturedPost?.id)
-  .slice(0, 3);
+
+const recommendedPosts = getHomeRecommendations(
+  sortedPosts.filter((post) => post.id !== heroFeaturedPost?.id),
+  3,
+);
 
 const latestHighlights = recentPosts.slice(0, 4);
 const studyHighlights = studyNotes.slice(0, 4);
@@ -136,7 +139,7 @@ const getCategoryName = (slug: string) => getCategoryBySlug(slug)?.name ?? slug;
         </a>
 
         <div class="card-list">
-          {recommendedPosts.map((post) => (
+          {recommendedPosts.map(({ post, score }) => (
             <a href={`/posts/${post.id}/`} class="post-card">
               <p class="post-card__meta">
                 {getCategoryName(post.data.categorySlug)} · {post.data.publishedAt}
@@ -144,6 +147,12 @@ const getCategoryName = (slug: string) => getCategoryBySlug(slug)?.name ?? slug;
               </p>
               <h3 class="post-card__title">{post.data.title}</h3>
               <p class="post-card__description">{post.data.description}</p>
+              <div class="post-card__signals">
+                <span class="post-card__signal">추천 점수 {score}</span>
+                {post.data.tags.slice(0, 2).map((tag) => (
+                  <span class="post-card__signal">#{tag}</span>
+                ))}
+              </div>
             </a>
           ))}
         </div>
@@ -630,5 +639,23 @@ const getCategoryName = (slug: string) => getCategoryBySlug(slug)?.name ?? slug;
     .category-card__description {
       font-size: 0.9rem;
     }
+  }
+  .post-card__signals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+  }
+
+  .post-card__signal {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.42rem 0.72rem;
+    border-radius: 999px;
+    background: #eef4fb;
+    color: #35516e;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
   }
 </style>
