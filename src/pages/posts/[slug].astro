@@ -13,6 +13,11 @@ import SiteLayout from "../../layouts/SiteLayout.astro";
 import VisualizationBlock from "../../components/VisualizationBlock.astro";
 import { getCategoryBySlug } from "../../data/site";
 import { getRelatedPosts } from "../../utils/related-posts";
+import {
+  getContentLengthLabel,
+  getReadingTimeMinutes,
+  isUpdatedPost,
+} from "../../utils/post-meta";
 
 export async function getStaticPaths() {
   const posts = await getCollection("posts", ({ data }) => !data.draft);
@@ -154,6 +159,12 @@ const postStructuredData = {
 
 
 const rawBody = post.body ?? "";
+const readingTimeMinutes = getReadingTimeMinutes(rawBody);
+const contentLengthLabel = getContentLengthLabel(rawBody);
+const hasUpdated = isUpdatedPost(
+  String(post.data.publishedAt),
+  post.data.updatedAt ? String(post.data.updatedAt) : undefined,
+);
 const markerRegex = /\{\{viz:([\w-]+)\}\}/g;
 
 type Segment =
@@ -249,6 +260,14 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
       <div>
         <dt>대표 글</dt>
         <dd>{post.data.featured ? "예" : "아니오"}</dd>
+      </div>
+      <div>
+        <dt>예상 읽기 시간</dt>
+        <dd>약 {readingTimeMinutes}분 · {contentLengthLabel}</dd>
+      </div>
+      <div>
+        <dt>업데이트 여부</dt>
+        <dd>{hasUpdated ? "수정됨" : "초판"}</dd>
       </div>
     </dl>
 
