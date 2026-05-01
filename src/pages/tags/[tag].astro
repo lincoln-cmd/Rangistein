@@ -33,11 +33,21 @@ export async function getStaticPaths() {
 }
 
 const { tag, posts } = Astro.props;
+
 const relatedTags = getRelatedTags(tag, posts, 8);
+
 const featuredCount = posts.filter((post: any) => post.data.featured).length;
+
+/* ---------------------------
+   🔥 추가: 추천 글 (핵심)
+--------------------------- */
+const recommendedPosts = posts.slice(0, 3);
 ---
 
 <SiteLayout title={`${tag} | 태그 | 랑이슈타인`} currentPath="/tags/">
+  {/* ---------------------------
+      헤더
+  --------------------------- */}
   <section class="section-card">
     <p class="eyebrow">Tag</p>
     <h1 class="page-title">#{tag}</h1>
@@ -47,6 +57,45 @@ const featuredCount = posts.filter((post: any) => post.data.featured).length;
     </p>
   </section>
 
+  {/* ---------------------------
+      🔥 추천 글 섹션 (추가)
+  --------------------------- */}
+  {recommendedPosts.length > 0 && (
+    <section class="section-card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">추천</p>
+          <h2 class="section-title">이 태그의 추천 글</h2>
+        </div>
+        <p class="section-description">
+          이 주제를 이해하기 좋은 핵심 글입니다.
+        </p>
+      </div>
+
+      <div class="post-list">
+        {recommendedPosts.map((post: any) => {
+          const categoryName =
+            getCategoryBySlug(post.data.categorySlug)?.name ??
+            post.data.categorySlug;
+
+          return (
+            <a href={`/posts/${post.id}/`} class="post-card">
+              <p class="post-card__meta">
+                {categoryName} · {post.data.publishedAt}
+                {post.data.featured ? " · 대표 글" : ""}
+              </p>
+              <h2 class="post-card__title">{post.data.title}</h2>
+              <p class="post-card__description">{post.data.description}</p>
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  )}
+
+  {/* ---------------------------
+      기존: 관련 태그
+  --------------------------- */}
   {relatedTags.length > 0 && (
     <section class="section-card">
       <div class="section-header">
@@ -70,12 +119,18 @@ const featuredCount = posts.filter((post: any) => post.data.featured).length;
     </section>
   )}
 
+  {/* ---------------------------
+      기존: 전체 목록
+  --------------------------- */}
   <section class="post-list">
     {posts.map((post: any) => {
       const categoryName =
-        getCategoryBySlug(post.data.categorySlug)?.name ?? post.data.categorySlug;
+        getCategoryBySlug(post.data.categorySlug)?.name ??
+        post.data.categorySlug;
 
-      const otherTags = post.data.tags.filter((item: string) => item !== tag).slice(0, 3);
+      const otherTags = post.data.tags
+        .filter((item: string) => item !== tag)
+        .slice(0, 3);
 
       return (
         <a href={`/posts/${post.id}/`} class="post-card">
@@ -98,6 +153,9 @@ const featuredCount = posts.filter((post: any) => post.data.featured).length;
     })}
   </section>
 
+  {/* ---------------------------
+      하단 이동
+  --------------------------- */}
   <section class="section-card section-card--compact">
     <a href="/tags/" class="back-link">← 태그 목록으로 돌아가기</a>
   </section>
@@ -134,7 +192,6 @@ const featuredCount = posts.filter((post: any) => post.data.featured).length;
   .page-title {
     margin: 0 0 0.5rem;
     font-size: clamp(1.8rem, 3vw, 2.6rem);
-    line-height: 1.15;
   }
 
   .page-description,
@@ -147,7 +204,6 @@ const featuredCount = posts.filter((post: any) => post.data.featured).length;
     margin: 0;
     font-size: 1.2rem;
     font-weight: 800;
-    letter-spacing: -0.02em;
   }
 
   .tag-wrap {
@@ -164,28 +220,13 @@ const featuredCount = posts.filter((post: any) => post.data.featured).length;
     border-radius: 999px;
     background: #eef5fc;
     color: #244f84;
-    font-size: 0.94rem;
     font-weight: 700;
-    transition:
-      transform 0.2s ease,
-      box-shadow 0.2s ease,
-      background-color 0.2s ease;
-  }
-
-  .tag-chip:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 18px rgba(24, 62, 105, 0.1);
-    background: #e4f0fb;
   }
 
   .tag-chip__count {
-    display: inline-flex;
-    min-width: 1.5rem;
-    justify-content: center;
     padding: 0.1rem 0.45rem;
     border-radius: 999px;
     background: rgba(36, 79, 132, 0.12);
-    font-size: 0.82rem;
   }
 
   .post-list {
@@ -194,22 +235,10 @@ const featuredCount = posts.filter((post: any) => post.data.featured).length;
   }
 
   .post-card {
-    display: block;
     padding: 1.2rem 1.25rem;
     border: 1px solid #dde5ed;
     border-radius: 18px;
     background: #ffffff;
-    box-shadow: 0 10px 30px rgba(19, 36, 59, 0.05);
-    transition:
-      transform 0.2s ease,
-      box-shadow 0.2s ease,
-      border-color 0.2s ease;
-  }
-
-  .post-card:hover {
-    transform: translateY(-2px);
-    border-color: #bfd3ea;
-    box-shadow: 0 12px 28px rgba(24, 62, 105, 0.08);
   }
 
   .post-card__meta {
@@ -222,53 +251,25 @@ const featuredCount = posts.filter((post: any) => post.data.featured).length;
   .post-card__title {
     margin: 0 0 0.45rem;
     font-size: 1.15rem;
-    line-height: 1.35;
   }
 
   .post-card__description {
     margin: 0;
     color: #58697a;
-    line-height: 1.65;
   }
 
   .post-card__tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
     margin-top: 0.85rem;
   }
 
   .post-card__tag {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.42rem 0.72rem;
-    border-radius: 999px;
     background: #eef4fb;
-    color: #35516e;
-    font-size: 0.8rem;
-    font-weight: 700;
-    line-height: 1;
+    padding: 0.4rem 0.7rem;
+    border-radius: 999px;
   }
 
   .back-link {
     color: #285ea8;
     font-weight: 700;
-  }
-
-  @media (max-width: 640px) {
-    .section-card {
-      padding: 1.1rem;
-      border-radius: 16px;
-    }
-
-    .section-header {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .post-card {
-      padding: 1rem 1.05rem;
-      border-radius: 16px;
-    }
   }
 </style>
