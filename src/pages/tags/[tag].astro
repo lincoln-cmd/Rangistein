@@ -3,6 +3,10 @@ import { getCollection } from "astro:content";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 import { getCategoryBySlug } from "../../data/site";
 import { getRelatedTags } from "../../utils/tag-utils";
+import {
+  getNewestTimestamp,
+  getUnifiedRecommendationScore,
+} from "../../utils/recommendation-score";
 
 export async function getStaticPaths() {
   const posts = await getCollection("posts", ({ data }) => !data.draft);
@@ -38,16 +42,24 @@ const relatedTags = getRelatedTags(tag, posts, 8);
 
 const featuredCount = posts.filter((post: any) => post.data.featured).length;
 
-/* ---------------------------
-   🔥 추가: 추천 글 (핵심)
---------------------------- */
-const recommendedPosts = posts.slice(0, 3);
+const newestTimestamp = getNewestTimestamp(posts);
+
+const recommendedPosts = posts
+  .map((post: any) => ({
+    post,
+    score: getUnifiedRecommendationScore(post, newestTimestamp),
+  }))
+  .sort((a: any, b: any) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return String(b.post.data.publishedAt).localeCompare(
+      String(a.post.data.publishedAt),
+    );
+  })
+  .slice(0, 3)
+  .map((item: any) => item.post);
 ---
 
 <SiteLayout title={`${tag} | 태그 | 랑이슈타인`} currentPath="/tags/">
-  {/* ---------------------------
-      헤더
-  --------------------------- */}
   <section class="section-card">
     <p class="eyebrow">Tag</p>
     <h1 class="page-title">#{tag}</h1>
@@ -57,9 +69,6 @@ const recommendedPosts = posts.slice(0, 3);
     </p>
   </section>
 
-  {/* ---------------------------
-      🔥 추천 글 섹션 (추가)
-  --------------------------- */}
   {recommendedPosts.length > 0 && (
     <section class="section-card">
       <div class="section-header">
@@ -93,9 +102,6 @@ const recommendedPosts = posts.slice(0, 3);
     </section>
   )}
 
-  {/* ---------------------------
-      기존: 관련 태그
-  --------------------------- */}
   {relatedTags.length > 0 && (
     <section class="section-card">
       <div class="section-header">
@@ -119,9 +125,6 @@ const recommendedPosts = posts.slice(0, 3);
     </section>
   )}
 
-  {/* ---------------------------
-      기존: 전체 목록
-  --------------------------- */}
   <section class="post-list">
     {posts.map((post: any) => {
       const categoryName =
@@ -153,9 +156,6 @@ const recommendedPosts = posts.slice(0, 3);
     })}
   </section>
 
-  {/* ---------------------------
-      하단 이동
-  --------------------------- */}
   <section class="section-card section-card--compact">
     <a href="/tags/" class="back-link">← 태그 목록으로 돌아가기</a>
   </section>
