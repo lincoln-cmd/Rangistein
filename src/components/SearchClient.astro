@@ -116,6 +116,16 @@ const categoryOptions = Array.from(
     const escapeRegExp = (value) =>
       String(value ?? "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+    const toTimestamp = (value) => {
+      const parsed = Date.parse(String(value ?? ""));
+      return Number.isNaN(parsed) ? 0 : parsed;
+    };
+
+    const newestTimestamp = Math.max(
+      ...items.map((item) => toTimestamp(item.publishedAt)),
+      0,
+    );
+
     const getTypeLabel = (type) => {
       if (type === "study") return "공부 노트";
       if (type === "latest") return "최신 동향";
@@ -133,6 +143,37 @@ const categoryOptions = Array.from(
 
       const regex = new RegExp(`(${escapedQuery})`, "gi");
       return safeText.replace(regex, '<mark class="search-highlight">$1</mark>');
+    };
+
+    const getRecencyBonus = (item) => {
+      const publishedAt = toTimestamp(item.publishedAt);
+
+      if (!publishedAt || !newestTimestamp) return 0;
+
+      const diffDays = Math.max(
+        0,
+        (newestTimestamp - publishedAt) / (1000 * 60 * 60 * 24),
+      );
+
+      if (diffDays <= 7) return 12;
+      if (diffDays <= 30) return 9;
+      if (diffDays <= 90) return 6;
+      if (diffDays <= 180) return 3;
+
+      return 1;
+    };
+
+    const getRecommendationBonus = (item) => {
+      let score = 0;
+
+      if (item.featured) score += 30;
+      if (item.type === "study") score += 4;
+      if (item.type === "latest") score += 4;
+
+      score += Math.min((item.tags || []).length, 5) * 2;
+      score += getRecencyBonus(item);
+
+      return score;
     };
 
     const getSearchScore = (item, query) => {
@@ -263,12 +304,19 @@ const categoryOptions = Array.from(
       }
 
       const filtered = items
-        .map((item, index) => ({
-          item,
-          index,
-          score: getSearchScore(item, query),
-        }))
-        .filter(({ item, score }) => {
+        .map((item, index) => {
+          const searchScore = getSearchScore(item, query);
+          const recommendationBonus = hasQuery ? getRecommendationBonus(item) : 0;
+
+          return {
+            item,
+            index,
+            searchScore,
+            recommendationBonus,
+            score: searchScore + recommendationBonus,
+          };
+        })
+        .filter(({ item, searchScore }) => {
           const haystack = normalize(
             [
               item.title,
@@ -284,7 +332,7 @@ const categoryOptions = Array.from(
             ? item.categorySlug === selectedCategory
             : true;
 
-          return matchesQuery && matchesCategory && (!hasQuery || score > 0);
+          return matchesQuery && matchesCategory && (!hasQuery || searchScore > 0);
         })
         .sort((a, b) => {
           if (hasQuery && b.score !== a.score) {
