@@ -163,6 +163,8 @@ const categoryOptions = Array.from(
       return 1;
     };
 
+    const isRecentPost = (item) => getRecencyBonus(item) >= 9;
+
     const getRecommendationBonus = (item) => {
       let score = 0;
 
@@ -218,6 +220,45 @@ const categoryOptions = Array.from(
       return score;
     };
 
+    const getResultSignals = (item, query) => {
+      const normalizedQuery = normalize(query);
+      const title = normalize(item.title);
+      const tags = (item.tags || []).map((tag) => normalize(tag));
+      const signals = [];
+
+      if (normalizedQuery) {
+        if (title === normalizedQuery || title.includes(normalizedQuery)) {
+          signals.push({
+            label: "제목 일치",
+            accent: true,
+          });
+        }
+
+        if (tags.some((tag) => tag === normalizedQuery || tag.includes(normalizedQuery))) {
+          signals.push({
+            label: "태그 일치",
+            accent: true,
+          });
+        }
+      }
+
+      if (item.featured) {
+        signals.push({
+          label: "대표 글",
+          accent: false,
+        });
+      }
+
+      if (isRecentPost(item)) {
+        signals.push({
+          label: "최신 글",
+          accent: false,
+        });
+      }
+
+      return signals.slice(0, 4);
+    };
+
     const buildCard = (item, query) => {
       const anchor = document.createElement("a");
       anchor.href = `/posts/${item.id}/`;
@@ -250,6 +291,25 @@ const categoryOptions = Array.from(
         badgeWrap.appendChild(featuredBadge);
       }
 
+      const signalItems = getResultSignals(item, query);
+      if (signalItems.length > 0) {
+        const signalWrap = document.createElement("div");
+        signalWrap.className = "post-card__signals";
+
+        signalItems.forEach((signal) => {
+          const span = document.createElement("span");
+          span.className = signal.accent
+            ? "post-card__signal post-card__signal--accent"
+            : "post-card__signal";
+          span.textContent = signal.label;
+          signalWrap.appendChild(span);
+        });
+
+        anchor.append(meta, title, description, badgeWrap, signalWrap);
+      } else {
+        anchor.append(meta, title, description, badgeWrap);
+      }
+
       const categoryHint = document.createElement("p");
       categoryHint.className = "post-card__category-hint";
       categoryHint.innerHTML = `카테고리: ${highlightText(item.categoryName, query)}`;
@@ -264,7 +324,7 @@ const categoryOptions = Array.from(
         tagWrap.appendChild(span);
       });
 
-      anchor.append(meta, title, description, badgeWrap, categoryHint, tagWrap);
+      anchor.append(categoryHint, tagWrap);
       return anchor;
     };
 
@@ -540,6 +600,30 @@ const categoryOptions = Array.from(
   :global(.search-results .post-card__badge--accent) {
     background: #dff1ff;
     color: #1f5f8b;
+  }
+
+  :global(.search-results .post-card__signals) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+  }
+
+  :global(.search-results .post-card__signal) {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.42rem 0.72rem;
+    border-radius: 999px;
+    background: #eef4fb;
+    color: #35516e;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  :global(.search-results .post-card__signal--accent) {
+    background: #fff1c2;
+    color: #7c5a00;
   }
 
   :global(.search-results .post-card__category-hint) {
