@@ -65,6 +65,61 @@ const searchItems = sortedPosts.map((post) => ({
 }));
 
 const getCategoryName = (slug: string) => getCategoryBySlug(slug)?.name ?? slug;
+
+function toTimestamp(value: string) {
+  const parsed = Date.parse(String(value));
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+const newestTimestamp = Math.max(
+  ...sortedPosts.map((post) => toTimestamp(String(post.data.publishedAt))),
+  0,
+);
+
+function getRecencyBonus(publishedAt: string) {
+  const publishedTimestamp = toTimestamp(publishedAt);
+
+  if (!publishedTimestamp || !newestTimestamp) return 0;
+
+  const diffDays = Math.max(
+    0,
+    (newestTimestamp - publishedTimestamp) / (1000 * 60 * 60 * 24),
+  );
+
+  if (diffDays <= 7) return 12;
+  if (diffDays <= 30) return 9;
+  if (diffDays <= 90) return 6;
+  if (diffDays <= 180) return 3;
+
+  return 1;
+}
+
+function isRecentPost(publishedAt: string) {
+  return getRecencyBonus(publishedAt) >= 9;
+}
+
+function getHomeRecommendationSignals(post: (typeof sortedPosts)[number]) {
+  const signals: Array<{ label: string; accent?: boolean }> = [];
+
+  signals.push({
+    label: "홈 추천",
+    accent: true,
+  });
+
+  if (post.data.featured) {
+    signals.push({
+      label: "대표 글",
+    });
+  }
+
+  if (isRecentPost(String(post.data.publishedAt))) {
+    signals.push({
+      label: "최신 글",
+    });
+  }
+
+  return signals.slice(0, 3);
+}
 ---
 
 <SiteLayout title={siteTitle} description={siteDescription} currentPath="/">
@@ -139,22 +194,37 @@ const getCategoryName = (slug: string) => getCategoryBySlug(slug)?.name ?? slug;
         </a>
 
         <div class="card-list">
-          {recommendedPosts.map(({ post, score }) => (
-            <a href={`/posts/${post.id}/`} class="post-card">
-              <p class="post-card__meta">
-                {getCategoryName(post.data.categorySlug)} · {post.data.publishedAt}
-                {post.data.featured ? " · 대표 글" : ""}
-              </p>
-              <h3 class="post-card__title">{post.data.title}</h3>
-              <p class="post-card__description">{post.data.description}</p>
-              <div class="post-card__signals">
-                <span class="post-card__signal">추천 점수 {score}</span>
-                {post.data.tags.slice(0, 2).map((tag) => (
-                  <span class="post-card__signal">#{tag}</span>
-                ))}
-              </div>
-            </a>
-          ))}
+          {recommendedPosts.map(({ post, score }) => {
+            const signals = getHomeRecommendationSignals(post);
+
+            return (
+              <a href={`/posts/${post.id}/`} class="post-card">
+                <p class="post-card__meta">
+                  {getCategoryName(post.data.categorySlug)} · {post.data.publishedAt}
+                  {post.data.featured ? " · 대표 글" : ""}
+                </p>
+                <h3 class="post-card__title">{post.data.title}</h3>
+                <p class="post-card__description">{post.data.description}</p>
+
+                <div class="post-card__signals">
+                  {signals.map((signal) => (
+                    <span
+                      class={
+                        signal.accent
+                          ? "post-card__signal post-card__signal--accent"
+                          : "post-card__signal"
+                      }
+                    >
+                      {signal.label}
+                    </span>
+                  ))}
+                  {post.data.tags.slice(0, 2).map((tag) => (
+                    <span class="post-card__signal">#{tag}</span>
+                  ))}
+                </div>
+              </a>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -512,6 +582,30 @@ const getCategoryName = (slug: string) => getCategoryBySlug(slug)?.name ?? slug;
     line-height: 1.65;
   }
 
+  .post-card__signals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+  }
+
+  .post-card__signal {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.42rem 0.72rem;
+    border-radius: 999px;
+    background: #eef4fb;
+    color: #35516e;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .post-card__signal--accent {
+    background: #fff1c2;
+    color: #7c5a00;
+  }
+
   .category-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -639,23 +733,5 @@ const getCategoryName = (slug: string) => getCategoryBySlug(slug)?.name ?? slug;
     .category-card__description {
       font-size: 0.9rem;
     }
-  }
-  .post-card__signals {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-top: 0.85rem;
-  }
-
-  .post-card__signal {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.42rem 0.72rem;
-    border-radius: 999px;
-    background: #eef4fb;
-    color: #35516e;
-    font-size: 0.8rem;
-    font-weight: 700;
-    line-height: 1;
   }
 </style>
