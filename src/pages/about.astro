@@ -16,6 +16,21 @@ const pageDescription =
     </p>
   </section>
 
+  <section class="summary-grid">
+    <div class="summary-card">
+      <p class="summary-card__label">핵심 목적</p>
+      <strong class="summary-card__value">과학 지식과 학습 기록 아카이브</strong>
+    </div>
+    <div class="summary-card">
+      <p class="summary-card__label">주요 분야</p>
+      <strong class="summary-card__value">수학 · 물리 · 화학 · 생명과학 · 지구과학 · 천문학</strong>
+    </div>
+    <div class="summary-card">
+      <p class="summary-card__label">콘텐츠 성격</p>
+      <strong class="summary-card__value">이론 정리 · 최신 동향 · 논문 요약 · 공부 노트</strong>
+    </div>
+  </section>
+
   <section class="section-card">
     <h2 class="section-title">이 사이트에서 다루는 것</h2>
     <ul class="info-list">
@@ -36,15 +51,95 @@ const pageDescription =
   </section>
 
   <section class="section-card">
+    <h2 class="section-title">콘텐츠 작성 원칙</h2>
+    <ul class="info-list">
+      <li>가능한 한 출처와 참고 자료를 함께 정리합니다.</li>
+      <li>개인 해설과 사실 정보는 구분해서 전달합니다.</li>
+      <li>학습 중간 기록도 남겨서 이해 과정이 보이도록 구성합니다.</li>
+      <li>텍스트뿐 아니라 표, 차트, 수식, 화학식을 함께 활용합니다.</li>
+    </ul>
+  </section>
+
+  <section class="section-card">
+    <h2 class="section-title">이 사이트 활용 방법</h2>
+    <div class="usage-grid">
+      <div class="usage-card">
+        <p class="usage-card__label">카테고리</p>
+        <h3 class="usage-card__title">분야별로 탐색</h3>
+        <p class="usage-card__description">
+          수학, 물리, 화학, 생명과학, 지구과학, 천문학, 공부 노트로 나누어 볼 수 있습니다.
+        </p>
+      </div>
+
+      <div class="usage-card">
+        <p class="usage-card__label">태그</p>
+        <h3 class="usage-card__title">주제어 중심 탐색</h3>
+        <p class="usage-card__description">
+          특정 개념이나 키워드를 중심으로 관련 글을 묶어서 볼 수 있습니다.
+        </p>
+      </div>
+
+      <div class="usage-card">
+        <p class="usage-card__label">검색</p>
+        <h3 class="usage-card__title">빠른 검색</h3>
+        <p class="usage-card__description">
+          제목, 설명, 태그, 카테고리 기준으로 원하는 글을 빠르게 찾을 수 있습니다.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-card">
     <h2 class="section-title">관리자</h2>
     <p class="section-text">
       김동훈 · 과학과 글쓰기, 그리고 개인 웹 아카이브 구축에 관심을 두고 운영 중입니다.
     </p>
-    <div class="link-row">
-      <a href="https://github.com/lincoln-cmd/Rangistein" target="_blank" rel="noreferrer" class="action-link">
-        GitHub 저장소 보기
+
+    <div class="cta-grid">
+      <a
+        href="https://github.com/lincoln-cmd/Rangistein"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="cta-card"
+      >
+        <p class="cta-card__label">GitHub</p>
+        <h3 class="cta-card__title">저장소 보기</h3>
+        <p class="cta-card__description">
+          사이트 소스와 콘텐츠 운영 구조를 확인할 수 있습니다.
+        </p>
       </a>
-      <a href="/admin/index.html" class="action-link">관리자 페이지</a>
+
+      <a href="/admin/index.html" class="cta-card">
+        <p class="cta-card__label">관리자</p>
+        <h3 class="cta-card__title">관리자 페이지</h3>
+        <p class="cta-card__description">
+          CMS에서 글을 작성하고 수정하는 관리 화면으로 이동합니다.
+        </p>
+      </a>
+
+      <a href="/categories/" class="cta-card">
+        <p class="cta-card__label">카테고리</p>
+        <h3 class="cta-card__title">카테고리 보기</h3>
+        <p class="cta-card__description">
+          과학 분야별로 정리된 글 목록을 탐색할 수 있습니다.
+        </p>
+      </a>
+
+      <a href="/tags/" class="cta-card">
+        <p class="cta-card__label">태그</p>
+        <h3 class="cta-card__title">태그 보기</h3>
+        <p class="cta-card__description">
+          자주 쓰인 주제어를 기준으로 관련 글을 이어서 볼 수 있습니다.
+        </p>
+      </a>
+
+      <a href="/search/" class="cta-card">
+        <p class="cta-card__label">검색</p>
+        <h3 class="cta-card__title">게시물 검색</h3>
+        <p class="cta-card__description">
+          키워드와 카테고리 필터를 활용해 원하는 글을 더 빠르게 찾습니다.
+        </p>
+      </a>
     </div>
   </section>
 </SiteLayout>
@@ -82,6 +177,7 @@ const pageDescription =
   .section-text {
     margin: 0;
     color: #58697a;
+    line-height: 1.75;
   }
 
   .section-title {
@@ -91,30 +187,128 @@ const pageDescription =
     letter-spacing: -0.02em;
   }
 
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .summary-card {
+    padding: 1.15rem 1.2rem;
+    border: 1px solid #dde5ed;
+    border-radius: 18px;
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(19, 36, 59, 0.06);
+  }
+
+  .summary-card__label {
+    margin: 0 0 0.35rem;
+    color: #51719a;
+    font-size: 0.88rem;
+    font-weight: 700;
+  }
+
+  .summary-card__value {
+    font-size: 1.02rem;
+    line-height: 1.5;
+  }
+
   .info-list {
     margin: 0;
     padding-left: 1.2rem;
     color: #2e3c49;
+    line-height: 1.75;
   }
 
   .info-list li + li {
     margin-top: 0.45rem;
   }
 
-  .link-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
+  .usage-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .usage-card {
+    padding: 1.1rem;
+    border: 1px solid #dde5ed;
+    border-radius: 18px;
+    background: #fbfdff;
+  }
+
+  .usage-card__label {
+    margin: 0 0 0.35rem;
+    color: #51719a;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  .usage-card__title {
+    margin: 0 0 0.45rem;
+    font-size: 1.05rem;
+    line-height: 1.35;
+  }
+
+  .usage-card__description {
+    margin: 0;
+    color: #58697a;
+    line-height: 1.65;
+    font-size: 0.94rem;
+  }
+
+  .cta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
     margin-top: 1rem;
   }
 
-  .action-link {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.7rem 1rem;
-    border-radius: 999px;
-    background: #eef5fc;
-    color: #244f84;
+  .cta-card {
+    display: block;
+    padding: 1rem 1.05rem;
+    border: 1px solid #e4ebf2;
+    border-radius: 16px;
+    background: #fbfdff;
+    color: inherit;
+    text-decoration: none;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .cta-card:hover {
+    transform: translateY(-2px);
+    border-color: #bfd3ea;
+    box-shadow: 0 10px 24px rgba(24, 62, 105, 0.08);
+  }
+
+  .cta-card__label {
+    margin: 0 0 0.35rem;
+    color: #51719a;
+    font-size: 0.82rem;
     font-weight: 700;
+  }
+
+  .cta-card__title {
+    margin: 0 0 0.45rem;
+    font-size: 1.02rem;
+    line-height: 1.35;
+  }
+
+  .cta-card__description {
+    margin: 0;
+    color: #58697a;
+    font-size: 0.94rem;
+    line-height: 1.65;
+  }
+
+  @media (max-width: 820px) {
+    .summary-grid,
+    .usage-grid,
+    .cta-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
