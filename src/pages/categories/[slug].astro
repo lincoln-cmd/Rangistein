@@ -2,6 +2,10 @@
 import { getCollection } from "astro:content";
 import SiteLayout from "../../layouts/SiteLayout.astro";
 import { categories, getCategoryBySlug } from "../../data/site";
+import {
+  getNewestTimestamp,
+  getUnifiedRecommendationScore,
+} from "../../utils/recommendation-score";
 
 export async function getStaticPaths() {
   return categories.map((category) => ({
@@ -24,6 +28,70 @@ if (!category) {
 const posts = (await getCollection("posts", ({ data }) => !data.draft))
   .filter((post) => post.data.categorySlug === slug)
   .sort((a, b) => String(b.data.publishedAt).localeCompare(String(a.data.publishedAt)));
+
+const newestTimestamp = getNewestTimestamp(posts);
+
+const recommendedPosts = posts
+  .map((post) => ({
+    post,
+    score: getUnifiedRecommendationScore(post, newestTimestamp),
+  }))
+  .sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return String(b.post.data.publishedAt).localeCompare(String(a.post.data.publishedAt));
+  })
+  .slice(0, 3)
+  .map((item) => item.post);
+
+function toTimestamp(value: string) {
+  const parsed = Date.parse(String(value));
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function getRecencyBonus(publishedAt: string) {
+  const publishedTimestamp = toTimestamp(publishedAt);
+
+  if (!publishedTimestamp || !newestTimestamp) return 0;
+
+  const diffDays = Math.max(
+    0,
+    (newestTimestamp - publishedTimestamp) / (1000 * 60 * 60 * 24),
+  );
+
+  if (diffDays <= 7) return 12;
+  if (diffDays <= 30) return 9;
+  if (diffDays <= 90) return 6;
+  if (diffDays <= 180) return 3;
+
+  return 1;
+}
+
+function isRecentPost(publishedAt: string) {
+  return getRecencyBonus(publishedAt) >= 9;
+}
+
+function getCategoryRecommendationSignals(post: (typeof posts)[number]) {
+  const signals: Array<{ label: string; accent?: boolean }> = [];
+
+  signals.push({
+    label: "카테고리 핵심 글",
+    accent: true,
+  });
+
+  if (post.data.featured) {
+    signals.push({
+      label: "대표 글",
+    });
+  }
+
+  if (isRecentPost(String(post.data.publishedAt))) {
+    signals.push({
+      label: "최신 글",
+    });
+  }
+
+  return signals.slice(0, 3);
+}
 ---
 
 <SiteLayout
@@ -37,11 +105,71 @@ const posts = (await getCollection("posts", ({ data }) => !data.draft))
     <p class="page-description">{category.description}</p>
   </section>
 
+  {recommendedPosts.length > 0 && (
+    <section class="section-card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">추천</p>
+          <h2 class="section-title">이 카테고리의 추천 글</h2>
+        </div>
+        <p class="section-description">
+          이 분야를 이해하기 좋은 핵심 글입니다.
+        </p>
+      </div>
+
+      <div class="post-list">
+        {recommendedPosts.map((post) => {
+          const signals = getCategoryRecommendationSignals(post);
+
+          return (
+            <article class="post-card">
+              <p class="post-card__meta">
+                {post.data.publishedAt}
+                {post.data.featured ? " · 대표 글" : ""}
+              </p>
+              <h2 class="post-card__title">
+                <a href={`/posts/${post.id}/`}>{post.data.title}</a>
+              </h2>
+              <p class="post-card__description">{post.data.description}</p>
+
+              {signals.length > 0 && (
+                <div class="post-card__signals">
+                  {signals.map((signal) => (
+                    <span
+                      class={
+                        signal.accent
+                          ? "post-card__signal post-card__signal--accent"
+                          : "post-card__signal"
+                      }
+                    >
+                      {signal.label}
+                    </span>
+                  ))}
+                </div>
+              )}
+
+              <div class="tag-row">
+                {post.data.tags.slice(0, 3).map((tag: string) => (
+                  <a href={`/tags/${encodeURIComponent(tag)}/`} class="tag-chip">
+                    #{tag}
+                  </a>
+                ))}
+              </div>
+            </article>
+          );
+        })}
+      </div>
+    </section>
+  )}
+
   <section class="post-list">
     {posts.length > 0 ? (
       posts.map((post) => (
         <article class="post-card">
-          <p class="post-card__meta">{post.data.publishedAt}</p>
+          <p class="post-card__meta">
+            {post.data.publishedAt}
+            {post.data.featured ? " · 대표 글" : ""}
+          </p>
           <h2 class="post-card__title">
             <a href={`/posts/${post.id}/`}>{post.data.title}</a>
           </h2>
@@ -76,6 +204,14 @@ const posts = (await getCollection("posts", ({ data }) => !data.draft))
       #ffffff;
   }
 
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
   .eyebrow {
     margin: 0 0 0.4rem;
     color: #51719a;
@@ -90,9 +226,17 @@ const posts = (await getCollection("posts", ({ data }) => !data.draft))
     letter-spacing: -0.03em;
   }
 
-  .page-description {
+  .page-description,
+  .section-description {
     margin: 0;
     color: #58697a;
+  }
+
+  .section-title {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
   }
 
   .post-list {
@@ -133,6 +277,30 @@ const posts = (await getCollection("posts", ({ data }) => !data.draft))
     line-height: 1.7;
   }
 
+  .post-card__signals {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+  }
+
+  .post-card__signal {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.42rem 0.72rem;
+    border-radius: 999px;
+    background: #eef4fb;
+    color: #35516e;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .post-card__signal--accent {
+    background: #fff1c2;
+    color: #7c5a00;
+  }
+
   .tag-row {
     display: flex;
     flex-wrap: wrap;
@@ -153,5 +321,23 @@ const posts = (await getCollection("posts", ({ data }) => !data.draft))
 
   .empty-card {
     color: #58697a;
+  }
+
+  @media (max-width: 640px) {
+    .section-card,
+    .post-card,
+    .empty-card {
+      padding: 1.1rem;
+      border-radius: 16px;
+    }
+
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .post-card__title {
+      font-size: 1.15rem;
+    }
   }
 </style>
