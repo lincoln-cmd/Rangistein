@@ -57,6 +57,8 @@ const recommendedPosts = posts
   .slice(0, 3)
   .map((item: any) => item.post);
 
+const featuredRelatedTags = relatedTags.slice(0, 3);
+
 function toTimestamp(value: string) {
   const parsed = Date.parse(String(value));
   return Number.isNaN(parsed) ? 0 : parsed;
@@ -223,8 +225,41 @@ function getRecommendationSignals(post: any) {
     })}
   </section>
 
-  <section class="section-card section-card--compact">
-    <a href="/tags/" class="back-link">← 태그 목록으로 돌아가기</a>
+  <section class="section-card">
+    <div class="section-header">
+      <div>
+        <p class="eyebrow">다음 탐색</p>
+        <h2 class="section-title">이 태그와 이어서 볼 경로</h2>
+      </div>
+    </div>
+
+    <div class="cta-grid">
+      <a href="/tags/" class="cta-card">
+        <p class="cta-card__label">태그</p>
+        <h3 class="cta-card__title">태그 목록으로 돌아가기</h3>
+        <p class="cta-card__description">
+          다른 태그를 전체 목록에서 다시 탐색합니다.
+        </p>
+      </a>
+
+      {featuredRelatedTags.map((item) => (
+        <a href={`/tags/${encodeURIComponent(item.tag)}/`} class="cta-card">
+          <p class="cta-card__label">연관 태그</p>
+          <h3 class="cta-card__title">#{item.tag}</h3>
+          <p class="cta-card__description">
+            현재 태그와 함께 자주 등장한 주제로 이어서 탐색합니다.
+          </p>
+        </a>
+      ))}
+
+      <a href="/search/" class="cta-card">
+        <p class="cta-card__label">검색</p>
+        <h3 class="cta-card__title">게시물 검색</h3>
+        <p class="cta-card__description">
+          키워드와 카테고리 필터로 관련 글을 더 빠르게 찾습니다.
+        </p>
+      </a>
+    </div>
   </section>
 </SiteLayout>
 
@@ -235,10 +270,6 @@ function getRecommendationSignals(post: any) {
     border-radius: 20px;
     background: #ffffff;
     box-shadow: 0 10px 30px rgba(19, 36, 59, 0.06);
-  }
-
-  .section-card--compact {
-    padding: 1rem 1.25rem;
   }
 
   .section-header {
@@ -359,8 +390,68 @@ function getRecommendationSignals(post: any) {
     border-radius: 999px;
   }
 
-  .back-link {
-    color: #285ea8;
+  .cta-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .cta-card {
+    display: block;
+    padding: 1rem 1.05rem;
+    border: 1px solid #e4ebf2;
+    border-radius: 16px;
+    background: #fbfdff;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
+  }
+
+  .cta-card:hover {
+    transform: translateY(-2px);
+    border-color: #bfd3ea;
+    box-shadow: 0 10px 24px rgba(24, 62, 105, 0.08);
+  }
+
+  .cta-card__label {
+    margin: 0 0 0.35rem;
+    color: #51719a;
+    font-size: 0.82rem;
     font-weight: 700;
+  }
+
+  .cta-card__title {
+    margin: 0 0 0.45rem;
+    font-size: 1.02rem;
+    line-height: 1.35;
+  }
+
+  .cta-card__description {
+    margin: 0;
+    color: #58697a;
+    font-size: 0.94rem;
+    line-height: 1.65;
+  }
+
+  @media (max-width: 640px) {
+    .section-card {
+      padding: 1.1rem;
+      border-radius: 16px;
+    }
+
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .post-card {
+      padding: 1rem 1.05rem;
+      border-radius: 16px;
+    }
+
+    .cta-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
