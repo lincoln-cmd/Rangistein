@@ -43,8 +43,55 @@ const {
 >
   <main class="page-shell">
     <Sidebar currentPath={currentPath} />
+
     <div class="content-area">
       <slot />
+
+      <footer class="site-footer">
+        <div class="site-footer__top">
+          <div>
+            <p class="site-footer__eyebrow">Rangistein</p>
+            <h2 class="site-footer__title">랑이슈타인</h2>
+            <p class="site-footer__description">
+              과학 이론, 최신 동향, 논문 요약, 개인 학습 기록을 정리하는 개인 과학 웹 아카이브입니다.
+            </p>
+          </div>
+
+          <div class="site-footer__nav">
+            <a href="/about/" class="site-footer__link">소개</a>
+            <a href="/categories/" class="site-footer__link">카테고리</a>
+            <a href="/tags/" class="site-footer__link">태그</a>
+            <a href="/search/" class="site-footer__link">검색</a>
+            <a
+              href="https://github.com/lincoln-cmd/Rangistein"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="site-footer__link"
+            >
+              GitHub
+            </a>
+            <a href="/admin/index.html" class="site-footer__link">관리자</a>
+          </div>
+        </div>
+
+        <div class="site-footer__bottom">
+          <p class="site-footer__meta">
+            문의:
+            <a href="mailto:dhkim1551@naver.com">dhkim1551@naver.com</a>
+            ·
+            <a href="mailto:top12369@gmail.com">top12369@gmail.com</a>
+          </p>
+          <p class="site-footer__meta">
+            <a
+              href="https://blog.naver.com/dhkim1551"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              네이버 블로그
+            </a>
+          </p>
+        </div>
+      </footer>
     </div>
   </main>
 </BaseLayout>
@@ -90,6 +137,94 @@ const {
     padding: 1.5rem;
   }
 
+  .site-footer {
+    margin-top: 0.5rem;
+    padding: 1.3rem 1.4rem;
+    border: 1px solid #dde5ed;
+    border-radius: 20px;
+    background: #ffffff;
+    box-shadow: 0 10px 30px rgba(19, 36, 59, 0.06);
+  }
+
+  .site-footer__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e4ebf2;
+  }
+
+  .site-footer__eyebrow {
+    margin: 0 0 0.3rem;
+    color: #51719a;
+    font-size: 0.84rem;
+    font-weight: 700;
+  }
+
+  .site-footer__title {
+    margin: 0 0 0.45rem;
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  .site-footer__description {
+    margin: 0;
+    max-width: 720px;
+    color: #58697a;
+    font-size: 0.94rem;
+    line-height: 1.7;
+  }
+
+  .site-footer__nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-end;
+  }
+
+  .site-footer__link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.55rem 0.85rem;
+    border-radius: 999px;
+    background: #eef5fc;
+    color: #244f84;
+    font-size: 0.88rem;
+    font-weight: 700;
+    transition:
+      transform 0.2s ease,
+      box-shadow 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .site-footer__link:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(24, 62, 105, 0.1);
+    background: #e4f0fb;
+  }
+
+  .site-footer__bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem 1rem;
+    padding-top: 1rem;
+  }
+
+  .site-footer__meta {
+    margin: 0;
+    color: #6a7988;
+    font-size: 0.9rem;
+    line-height: 1.7;
+  }
+
+  .site-footer__meta a {
+    color: #285ea8;
+    font-weight: 700;
+  }
+
   @media (max-width: 1080px) {
     .page-shell {
       grid-template-columns: 240px minmax(0, 1fr);
@@ -103,6 +238,25 @@ const {
 
     .content-area {
       padding: 1rem;
+    }
+
+    .site-footer {
+      padding: 1.1rem;
+      border-radius: 16px;
+    }
+
+    .site-footer__top {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .site-footer__nav {
+      justify-content: flex-start;
+    }
+
+    .site-footer__bottom {
+      flex-direction: column;
+      align-items: flex-start;
     }
   }
 
