@@ -23,22 +23,6 @@ const quickLinks = [
       <span class="brand__subtitle">Science Archive</span>
     </a>
 
-    <section class="sidebar__section">
-      <h2 class="sidebar__heading">바로가기</h2>
-      <ul class="sidebar__list">
-        {quickLinks.map((link) => (
-          <li>
-            <a
-              href={link.href}
-              class={`sidebar__link ${currentPath === link.href ? "is-active" : ""}`}
-            >
-              {link.label}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </section>
-
     <nav class="sidebar__section" aria-label="카테고리">
       <h2 class="sidebar__heading">카테고리</h2>
       <ul class="sidebar__list">
@@ -54,6 +38,22 @@ const quickLinks = [
         ))}
       </ul>
     </nav>
+
+    <section class="sidebar__section">
+      <h2 class="sidebar__heading">바로가기</h2>
+      <ul class="sidebar__list">
+        {quickLinks.map((link) => (
+          <li>
+            <a
+              href={link.href}
+              class={`sidebar__link ${currentPath === link.href ? "is-active" : ""}`}
+            >
+              {link.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
   </div>
 </aside>
 
