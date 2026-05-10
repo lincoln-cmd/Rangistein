@@ -233,6 +233,7 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
 <SiteLayout
   title={pageTitle}
   description={pageDescription}
+  currentPath={`/categories/${post.data.categorySlug}/`}
   ogType="article"
   publishedTime={String(post.data.publishedAt)}
   modifiedTime={String(post.data.updatedAt ?? post.data.publishedAt)}
