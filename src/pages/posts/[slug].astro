@@ -238,6 +238,10 @@ const vizMap = new Map(visualizations.map((viz: any) => [viz.id, viz]));
   publishedTime={String(post.data.publishedAt)}
   modifiedTime={String(post.data.updatedAt ?? post.data.publishedAt)}
   tags={post.data.tags}
+  keywords={post.data.tags}
+  author="김동훈"
+  articleSection={categoryName}
+  imageAlt={`${post.data.title} | 랑이슈타인 공유 이미지`}
   structuredData={postStructuredData}
 >
   <article class="article-card">
