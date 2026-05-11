@@ -1,8 +1,8 @@
 import { getCollection } from "astro:content";
 import { getCategoryBySlug, siteDescription, siteTitle } from "../data/site";
 
-function escapeXml(value: string) {
-  return value
+function escapeXml(value: string): string {
+  return String(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -10,8 +10,9 @@ function escapeXml(value: string) {
     .replaceAll("'", "&apos;");
 }
 
-export async function GET({ site }: { site: URL }) {
+export async function GET({ site }: { site: URL | undefined }) {
   const siteUrl = site ?? new URL("https://rangistein.pages.dev");
+  const rssUrl = new URL("/rss.xml", siteUrl).toString();
 
   const posts = await getCollection("posts", ({ data }) => !data.draft);
 
@@ -31,6 +32,7 @@ export async function GET({ site }: { site: URL }) {
           <link>${escapeXml(postUrl)}</link>
           <guid>${escapeXml(postUrl)}</guid>
           <description>${escapeXml(post.data.description)}</description>
+          <author>${escapeXml("top12369@gmail.com (김동훈)")}</author>
           <category>${escapeXml(categoryName)}</category>
           <pubDate>${new Date(String(post.data.publishedAt)).toUTCString()}</pubDate>
         </item>
@@ -39,13 +41,14 @@ export async function GET({ site }: { site: URL }) {
     .join("");
 
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${escapeXml(siteTitle)}</title>
     <link>${escapeXml(siteUrl.toString())}</link>
     <description>${escapeXml(siteDescription)}</description>
     <language>ko-KR</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <atom:link href="${escapeXml(rssUrl)}" rel="self" type="application/rss+xml" />
     ${items}
   </channel>
 </rss>`;
