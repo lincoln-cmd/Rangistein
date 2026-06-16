@@ -157,7 +157,6 @@ const postStructuredData = {
   },
 };
 
-
 const rawBody = post.body ?? "";
 const readingTimeMinutes = getReadingTimeMinutes(rawBody);
 const contentLengthLabel = getContentLengthLabel(rawBody);
@@ -204,7 +203,7 @@ async function renderMarkdownSegment(content: string) {
     .use(remarkRehype)
     .use(rehypeMathjax, {
       tex: {
-        packages: { "[+]": ["mhchem"] },
+        packages: { "[+]": ["ams", "mhchem"] },
       },
     })
     .use(createHeadingPlugin(toc))
