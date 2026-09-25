@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import SiteLayout from "../layouts/SiteLayout.astro";
 import SearchClient from "../components/SearchClient.astro";
+import ProjectNetwork from "../components/ProjectNetwork.astro";
 import {
   categories,
   getCategoryBySlug,
@@ -327,6 +328,8 @@ function getHomeRecommendationSignals(post: (typeof sortedPosts)[number]) {
       ))}
     </div>
   </section>
+
+  <ProjectNetwork />
 
   <footer class="footer section-card">
     <h2 class="section-title">관리자</h2>

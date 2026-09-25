@@ -1,0 +1,90 @@
+---
+const projects = [
+  {
+    index: "01",
+    code: "SCIENCE ARCHIVE",
+    name: "랑이슈타인",
+    description: "수학과 자연과학의 이론, 최신 동향과 논문을 분야별로 탐구하고 정리합니다.",
+    href: "https://rangistein.pages.dev/",
+    current: true,
+  },
+  {
+    index: "02",
+    code: "NIGHT-SKY ARCHIVE",
+    name: "랑이오스페어",
+    description: "직접 관측한 밤하늘과 장비, 이론과 공개 데이터를 하나의 기록으로 연결합니다.",
+    href: "https://rang-iosphere.pages.dev/",
+  },
+  {
+    index: "03",
+    code: "FINANCIAL ENGINEERING LAB",
+    name: "헤지캣",
+    description: "금융공학 이론을 검증하고 시뮬레이터와 데이터 기반 실험으로 확장합니다.",
+    href: "https://hedgecat.pages.dev/",
+  },
+] as const;
+---
+
+<section class="project-network" aria-labelledby="project-network-title">
+  <div class="network-heading">
+    <div>
+      <p class="network-eyebrow">RANGI PROJECT NETWORK</p>
+      <h2 id="project-network-title">하나의 호기심에서<br />다음 탐구 공간으로</h2>
+    </div>
+    <p>과학 이론에서 밤하늘의 실제 관측으로, 다시 데이터와 금융공학의 실험으로 관심사를 확장해 보세요.</p>
+  </div>
+
+  <div class="network-grid" role="navigation" aria-label="랑이 프로젝트 사이트">
+    {projects.map((project) => (
+      <a
+        class:list={["network-card", { current: project.current }]}
+        href={project.href}
+        aria-current={project.current ? "page" : undefined}
+        rel={project.current ? undefined : "external"}
+      >
+        <div class="card-meta">
+          <span>{project.index}</span>
+          <small>{project.code}</small>
+        </div>
+        <div class="card-copy">
+          <h3>{project.name}</h3>
+          <p>{project.description}</p>
+        </div>
+        <strong>{project.current ? "현재 위치" : "사이트 이동"}<span aria-hidden="true">{project.current ? "●" : "↗"}</span></strong>
+      </a>
+    ))}
+  </div>
+</section>
+
+<style>
+  .project-network { padding: 1.7rem; border: 1px solid #d9e4ee; border-radius: 22px; background: linear-gradient(145deg, #f8fbff, #eef5fb); box-shadow: 0 12px 34px rgba(19, 51, 84, .07); }
+  .network-heading { display: grid; grid-template-columns: 1.1fr .9fr; align-items: end; gap: 2rem; margin-bottom: 1.4rem; }
+  .network-eyebrow { margin: 0 0 .45rem; color: #286987; font-size: .78rem; font-weight: 800; letter-spacing: .12em; }
+  .network-heading h2 { margin: 0; color: #182b3f; font-size: clamp(1.7rem, 3.4vw, 2.7rem); line-height: 1.12; letter-spacing: -.045em; }
+  .network-heading > p { margin: 0 0 .2rem; color: #526678; line-height: 1.75; }
+  .network-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; }
+  .network-card { position: relative; min-height: 250px; padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; border: 1px solid #dbe6ef; border-radius: 18px; background: rgba(255,255,255,.92); transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+  .network-card::after { content: ""; position: absolute; right: -52px; bottom: -60px; width: 145px; height: 145px; border: 22px solid #2b7890; border-radius: 50%; opacity: .045; transition: opacity .2s ease, transform .2s ease; }
+  .network-card:hover, .network-card:focus-visible { border-color: #7da9c1; outline: none; transform: translateY(-3px); box-shadow: 0 13px 28px rgba(24, 76, 108, .1); }
+  .network-card:hover::after, .network-card:focus-visible::after { opacity: .1; transform: translate(-7px, -7px); }
+  .network-card.current { border-color: #4d91a7; background: linear-gradient(145deg, #eaf6f8, #f8fcfd); }
+  .card-meta { position: relative; z-index: 1; display: flex; justify-content: space-between; gap: .8rem; color: #286987; font-size: .72rem; font-weight: 800; letter-spacing: .08em; }
+  .card-meta small { color: #718495; font: inherit; font-size: .65rem; text-align: right; }
+  .card-copy { position: relative; z-index: 1; }
+  .card-copy h3 { margin: 0 0 .6rem; color: #172b40; font-size: clamp(1.35rem, 2.5vw, 1.9rem); letter-spacing: -.035em; }
+  .card-copy p { margin: 0; color: #586b7c; font-size: .9rem; line-height: 1.7; }
+  .network-card > strong { position: relative; z-index: 1; display: flex; justify-content: space-between; color: #286987; font-size: .78rem; }
+  .current > strong { color: #187088; }
+  @media (max-width: 900px) {
+    .network-heading { grid-template-columns: 1fr; gap: 1rem; }
+    .network-grid { grid-template-columns: 1fr; }
+    .network-card { min-height: 205px; }
+  }
+  @media (max-width: 520px) {
+    .project-network { padding: 1.1rem; border-radius: 16px; }
+    .network-card { min-height: 190px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .network-card, .network-card::after { transition: none; }
+  }
+</style>
